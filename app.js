@@ -1146,6 +1146,70 @@
     document.getElementById("btn-result-menu").addEventListener("click", () => {
       showScreen("menu");
     });
+
+    // --- PWA Service Worker & Installatie Knop ---
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+
+    const installBtn = document.getElementById("btn-install-pwa");
+    const installModal = document.getElementById("install-modal");
+    const closeInstallModalBtn = document.getElementById("btn-close-install-modal");
+    let deferredInstallPrompt = null;
+
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    // Toon op iPad/iOS alvast de installeerknop als hij nog niet als losse app draait
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    if (!isStandalone && isIOS && installBtn) {
+      installBtn.classList.remove("hidden");
+    }
+
+    window.addEventListener("beforeinstallprompt", e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (!isStandalone && installBtn) {
+        installBtn.classList.remove("hidden");
+      }
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      if (installBtn) installBtn.classList.add("hidden");
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener("click", async () => {
+        playSoundPop();
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          const { outcome } = await deferredInstallPrompt.userChoice;
+          if (outcome === "accepted") {
+            installBtn.classList.add("hidden");
+          }
+          deferredInstallPrompt = null;
+        } else if (installModal) {
+          installModal.classList.remove("hidden");
+        }
+      });
+    }
+
+    if (closeInstallModalBtn && installModal) {
+      closeInstallModalBtn.addEventListener("click", () => {
+        playSoundPop();
+        installModal.classList.add("hidden");
+      });
+      installModal.addEventListener("click", e => {
+        if (e.target === installModal) {
+          installModal.classList.add("hidden");
+        }
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

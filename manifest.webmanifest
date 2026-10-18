@@ -1,0 +1,32 @@
+{
+  "name": "Lekker Lezen! - Lijn 3 Leesspel",
+  "short_name": "Lekker Lezen",
+  "description": "Oefen met lezen volgens Lijn 3 (Malmberg) voor groep 3.",
+  "lang": "nl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F3F8FF",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

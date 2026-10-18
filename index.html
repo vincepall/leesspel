@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#3B82F6" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Lekker Lezen" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>Lekker Lezen! - Lijn 3 Leesspel</title>
   <!-- Andika heeft echte schoolletters (a en g zoals op school bij Lijn 3) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,6 +30,9 @@
         <h1>Lekker Lezen! <small class="badge-lijn3">Lijn 3</small></h1>
       </div>
       <div class="top-actions">
+        <button id="btn-install-pwa" class="icon-btn install-btn hidden" aria-label="Installeer als app op tablet" title="Installeer op tablet">
+          📲 <span>Installeer App</span>
+        </button>
         <button id="btn-sound-toggle" class="icon-btn sound-btn" aria-label="Geluid aan of uit" title="Geluid aan/uit">
           🔊
         </button>
@@ -280,6 +289,29 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- Installatie-hulp venster voor iPad / Tablet -->
+  <div id="install-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="install-modal-title">
+    <div class="modal-card">
+      <div class="modal-icon">📲</div>
+      <h3 id="install-modal-title">Zet de app op je tablet of iPad</h3>
+      <div class="install-steps">
+        <div class="install-step">
+          <span class="step-num">1</span>
+          <p>Tik in de browserbalk op het <strong>Deel-icoontje</strong> (vierkantje met pijltje omhoog ⬆️ of menu ⋮).</p>
+        </div>
+        <div class="install-step">
+          <span class="step-num">2</span>
+          <p>Kies <strong>"Zet op beginscherm"</strong> (➕) of <strong>"App installeren"</strong>.</p>
+        </div>
+        <div class="install-step">
+          <span class="step-num">3</span>
+          <p>Tik rechtsboven op <strong>"Voeg toe"</strong>. De app staat nu met een eigen icoontje op je tablet!</p>
+        </div>
+      </div>
+      <button id="btn-close-install-modal" class="primary-btn btn-blue">👍 Begrepen!</button>
+    </div>
   </div>
 
   <!-- Confetti canvas voor feestelijke beloning -->
