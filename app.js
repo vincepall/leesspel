@@ -109,19 +109,41 @@
     playTone(600, 55, "sine", 0, 0.09);
   }
 
-  function speakText(text) {
-    if (!state.soundEnabled || !("speechSynthesis" in window)) return;
+  let currentWordAudio = null;
+
+  function speakFallbackTTS(text) {
+    if (!("speechSynthesis" in window)) return;
     try {
-      window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "nl-NL";
-      utter.rate = 0.88; // Iets rustiger voor groep 3
-      utter.pitch = 1.05;
-      const voices = window.speechSynthesis.getVoices();
-      const nlVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("nl"));
-      if (nlVoice) utter.voice = nlVoice;
+      utter.rate = 0.9;
       window.speechSynthesis.speak(utter);
     } catch (_) {}
+  }
+
+  function speakText(text) {
+    if (!state.soundEnabled || !text) return;
+    const cleanWord = text.trim().toLowerCase();
+
+    try {
+      if (currentWordAudio) {
+        currentWordAudio.pause();
+        currentWordAudio.currentTime = 0;
+      }
+      const audio = new Audio(`audio/${encodeURIComponent(cleanWord)}.mp3`);
+      currentWordAudio = audio;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          speakFallbackTTS(cleanWord);
+        });
+      }
+    } catch (_) {
+      speakFallbackTTS(cleanWord);
+    }
   }
 
   // --- Hulpfuncties ---
@@ -1079,6 +1101,11 @@
 
     // Variant 2 knoppen tijdens het spel
     document.getElementById("btn-v2-speak").addEventListener("click", () => {
+      const currentWordObj = state.v2.words[state.v2.roundIndex];
+      if (currentWordObj) speakText(currentWordObj.word);
+    });
+
+    document.getElementById("v2-picture-box").addEventListener("click", () => {
       const currentWordObj = state.v2.words[state.v2.roundIndex];
       if (currentWordObj) speakText(currentWordObj.word);
     });
