@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Lekker Lezen! - Lijn 3 Leesspel</title>
+  <!-- Andika heeft echte schoolletters (a en g zoals op school bij Lijn 3) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- BOVENBALK -->
+    <header class="top-bar">
+      <button id="btn-home" class="icon-btn home-btn hidden" aria-label="Terug naar startscherm" title="Startscherm">
+        🏠 <span>Start</span>
+      </button>
+      <div class="logo-title">
+        <span class="logo-icon">📚</span>
+        <h1>Lekker Lezen! <small class="badge-lijn3">Lijn 3</small></h1>
+      </div>
+      <div class="top-actions">
+        <button id="btn-sound-toggle" class="icon-btn sound-btn" aria-label="Geluid aan of uit" title="Geluid aan/uit">
+          🔊
+        </button>
+      </div>
+    </header>
+
+    <!-- SCHERM 1: HOOFDMENU -->
+    <main id="screen-menu" class="screen active">
+      <div class="welcome-banner">
+        <div class="mascot">🦁</div>
+        <div class="welcome-text">
+          <h2>Hoi! Wat gaan we vandaag oefenen?</h2>
+          <p>Kies een niveau van <strong>Lijn 3</strong> en start een spelletje!</p>
+        </div>
+      </div>
+
+      <!-- Niveau selectie op basis van Lijn 3 Thema's -->
+      <section class="level-selector-card">
+        <h3>1. Kies de woordjes (Lijn 3):</h3>
+        <div class="level-pills" role="radiogroup" aria-label="Woordniveau">
+          <button class="level-pill active" data-level="1">
+            <span class="pill-star">⭐</span>
+            <strong>Start (Thema 1-3)</strong>
+            <small>vis, aap, poes, maan, boom</small>
+          </button>
+          <button class="level-pill" data-level="2">
+            <span class="pill-star">⭐⭐</span>
+            <strong>Midden (Thema 4-6)</strong>
+            <small>uil, muis, huis, geit, vuur</small>
+          </button>
+          <button class="level-pill" data-level="3">
+            <span class="pill-star">⭐⭐⭐</span>
+            <strong>Verder (Thema 7+)</strong>
+            <small>fiets, trein, stoel, bloem</small>
+          </button>
+          <button class="level-pill" data-level="all">
+            <span class="pill-star">🌈</span>
+            <strong>Alles door elkaar</strong>
+            <small>Alle 85+ woordjes</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- Keuze uit de 2 Spelvarianten -->
+      <section class="variants-grid">
+        <!-- Variant 1 -->
+        <div class="game-card variant-1-card">
+          <div class="card-badge">Spel 1 • 10 rondes</div>
+          <div class="card-preview">
+            <span class="preview-word">poes</span>
+            <span class="preview-arrow">👉</span>
+            <span class="preview-pics">🐶 🐱 🐟 🐸</span>
+          </div>
+          <h3>Woord lezen &amp; plaatje kiezen</h3>
+          <p>Lees het woord en tik op het juiste plaatje. Meteen goed is <strong>1 punt</strong>!</p>
+          <button id="btn-start-v1" class="primary-btn btn-green">
+            ▶️ Speel Spel 1
+          </button>
+        </div>
+
+        <!-- Variant 2 -->
+        <div class="game-card variant-2-card">
+          <div class="card-badge">Spel 2 • 5 rondes (2 pt per woord)</div>
+          <div class="card-preview">
+            <span class="preview-pics">⛵</span>
+            <span class="preview-arrow">👉</span>
+            <span class="preview-tiles"><span>b</span><span>oo</span><span>t</span></span>
+          </div>
+          <h3>Plaatje kijken &amp; woord maken</h3>
+          <p>Maak zelf het woord bij het plaatje. In één keer goed = <strong>2 punten</strong>, na 1 foutje verbeteren = <strong>1 punt</strong>!</p>
+          <button id="btn-open-v2-options" class="primary-btn btn-orange">
+            ▶️ Speel Spel 2
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- SCHERM 2: KEUZEMENU VOOR VARIANT 2 (Slepen vs Typen) -->
+    <section id="screen-v2-setup" class="screen">
+      <div class="setup-card">
+        <h2>Hoe wil je de woorden maken?</h2>
+        <p class="setup-subtitle">Kies hoe je Spel 2 wilt spelen (5 rondes, maximaal 10 punten):</p>
+
+        <div class="mode-choices">
+          <button id="btn-v2-mode-drag" class="mode-choice-btn selected" data-mode="drag">
+            <div class="mode-icon">👆🔤</div>
+            <div class="mode-info">
+              <strong>Letters slepen (10 letters)</strong>
+              <span>Je krijgt 10 letters. Sleep de juiste letters op volgorde naar de vakjes!</span>
+            </div>
+          </button>
+
+          <button id="btn-v2-mode-type" class="mode-choice-btn" data-mode="type">
+            <div class="mode-icon">⌨️✍️</div>
+            <div class="mode-info">
+              <strong>Zelf typen (geen letters gegeven)</strong>
+              <span>Er staan geen letters klaar. Typ zelf het woord met het toetsenbord!</span>
+            </div>
+          </button>
+        </div>
+
+        <div id="v2-digraph-option" class="extra-option-box">
+          <label class="toggle-label">
+            <input type="checkbox" id="chk-digraphs" checked />
+            <span class="toggle-custom"></span>
+            <span class="toggle-text">
+              <strong>Lijn 3 klankblokjes gebruiken</strong>
+              <small>Tweeletterklanken zoals <em>aa, ee, oo, oe, ij, ui, eu, ie</em> samen op 1 blokje</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="setup-actions">
+          <button id="btn-back-to-menu" class="secondary-btn">⬅️ Terug</button>
+          <button id="btn-start-v2" class="primary-btn btn-orange large-start-btn">🚀 Start Spel 2!</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHERM 3: SPEL VARIANT 1 (Woord -> 4 Plaatjes) -->
+    <section id="screen-game-v1" class="screen">
+      <div class="game-hud">
+        <div class="hud-item">
+          <span class="hud-label">Ronde</span>
+          <span id="v1-round-text" class="hud-value">1 / 10</span>
+        </div>
+        <div class="progress-dots" id="v1-progress-dots"></div>
+        <div class="hud-item score-hud">
+          <span class="hud-label">Punten</span>
+          <span class="hud-value">⭐ <span id="v1-score-text">0</span></span>
+        </div>
+      </div>
+
+      <div class="v1-play-area">
+        <div class="word-prompt-card">
+          <span class="prompt-instruction">Lees het woord en tik op het goede plaatje:</span>
+          <div class="target-word-wrapper">
+            <div id="v1-target-word" class="target-word">maan</div>
+          </div>
+          <div id="v1-round-points-status" class="points-status-pill">
+            🌟 1 punt te verdienen
+          </div>
+        </div>
+
+        <div id="v1-pictures-grid" class="pictures-grid">
+          <!-- 4 plaatjes worden hier dynamisch geplaatst -->
+        </div>
+
+        <div id="v1-feedback-bar" class="feedback-bar" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- SCHERM 4: SPEL VARIANT 2 (Plaatje -> Woord slepen of typen) -->
+    <section id="screen-game-v2" class="screen">
+      <div class="game-hud">
+        <div class="hud-item">
+          <span class="hud-label">Ronde</span>
+          <span id="v2-round-text" class="hud-value">1 / 5</span>
+        </div>
+        <div class="progress-dots" id="v2-progress-dots"></div>
+        <div class="hud-item score-hud">
+          <span class="hud-label">Punten</span>
+          <span class="hud-value">⭐ <span id="v2-score-text">0</span></span>
+        </div>
+      </div>
+
+      <div class="v2-play-area">
+        <!-- Plaatje + luisterknop + hoeveel punten nog waard -->
+        <div class="v2-top-row">
+          <div class="v2-picture-showcase">
+            <div id="v2-picture-box" class="v2-picture-box"></div>
+            <button id="btn-v2-speak" class="speak-word-btn" title="Luister naar het woord" aria-label="Luister naar het woord">
+              🔊 <span>Luister</span>
+            </button>
+          </div>
+
+          <div class="v2-status-panel">
+            <div id="v2-points-badge" class="points-status-pill points-2">
+              🌟🌟 2 punten waard
+            </div>
+            <p id="v2-instruction-text" class="v2-instruction">
+              Sleep de letters in de juiste volgorde naar de vakjes!
+            </p>
+            <div id="v2-feedback-bar" class="feedback-bar" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- Doelvakjes voor het woord -->
+        <div class="word-slots-container">
+          <div id="v2-word-slots" class="word-slots">
+            <!-- Vakjes voor de letters -->
+          </div>
+          <button id="btn-v2-clear" class="clear-slots-btn" title="Maak vakjes leeg">
+            🔄 Wissen
+          </button>
+        </div>
+
+        <!-- Mode A: Sleepbare letters (10 stuks) -->
+        <div id="v2-letter-bank-wrapper" class="letter-bank-wrapper">
+          <div id="v2-letter-bank" class="letter-bank">
+            <!-- 10 sleepbare lettertegels -->
+          </div>
+        </div>
+
+        <!-- Mode B: Toetsenbord invoer (geen letters gegeven) -->
+        <div id="v2-keyboard-wrapper" class="keyboard-wrapper hidden">
+          <div id="v2-onscreen-keyboard" class="onscreen-keyboard" aria-label="Schermtoetsenbord">
+            <!-- Touch toetsenbord (met kleine schoolletters) + ondersteuning voor fysiek toetsenbord -->
+          </div>
+        </div>
+
+        <!-- Controleer / Volgende knoppen -->
+        <div class="v2-action-row">
+          <button id="btn-v2-check" class="primary-btn btn-green check-btn">
+            ✅ Controleer woord
+          </button>
+          <button id="btn-v2-next" class="primary-btn btn-blue check-btn hidden">
+            ➡️ Volgende woord
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHERM 5: EINDSCHERM / BELONING -->
+    <section id="screen-result" class="screen">
+      <div class="result-card">
+        <div id="result-trophy" class="result-trophy">🏆</div>
+        <h2 id="result-title">Super gedaan!</h2>
+        <p id="result-subtitle" class="result-subtitle">Je hebt alle rondes uitgespeeld!</p>
+
+        <div class="score-circle">
+          <div class="score-big">
+            <span id="result-score">10</span>
+            <span class="score-divider">/</span>
+            <span id="result-max-score">10</span>
+          </div>
+          <span class="score-label">punten</span>
+        </div>
+
+        <div id="result-stars" class="result-stars"></div>
+
+        <div class="result-words-summary">
+          <h4>Geoefende woorden:</h4>
+          <div id="result-words-list" class="result-words-chips"></div>
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-play-again" class="primary-btn btn-green">
+            🔄 Nog een keer spelen
+          </button>
+          <button id="btn-result-menu" class="secondary-btn">
+            🏠 Ander spel kiezen
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Confetti canvas voor feestelijke beloning -->
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
