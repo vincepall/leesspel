@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" translate="no">
 <head>
   <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#3B82F6" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -105,6 +106,22 @@
           <p>Maak zelf het woord bij het plaatje. In één keer goed = <strong>2 punten</strong>, na 1 foutje verbeteren = <strong>1 punt</strong>!</p>
           <button id="btn-open-v2-options" class="primary-btn btn-orange">
             ▶️ Speel Spel 2
+          </button>
+        </div>
+
+        <!-- Variant 3: Space Mining -->
+        <div class="game-card variant-3-card">
+          <div class="card-badge">Spel 3 • Nieuw! 🚀 Ruimte-Missie</div>
+          <div class="card-preview preview-space">
+            <span class="preview-pics">☄️🐱</span>
+            <span class="preview-arrow">⚡</span>
+            <span class="preview-tiles"><span>p</span><span>oe</span><span>s</span></span>
+            <span class="preview-pics">💎</span>
+          </div>
+          <h3>Ruimte-Mijnwerker</h3>
+          <p>Zit in de cockpit, maak de woorden op je dashboard en schiet zo veel mogelijk asteroïden kapot voordat je 3 schilden op zijn!</p>
+          <button id="btn-start-v3" class="primary-btn btn-space">
+            🚀 Start Ruimte-Spel
           </button>
         </div>
       </section>
@@ -252,6 +269,149 @@
           <button id="btn-v2-next" class="primary-btn btn-blue check-btn hidden">
             ➡️ Volgende woord
           </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHERM 4B: SPEL VARIANT 3 (Ruimte-Mijnwerker / Cockpit Space-Mining) -->
+    <section id="screen-game-v3" class="screen">
+      <div id="v3-cockpit-shell" class="cockpit-shell">
+        <!-- BOVENSTE COCKPIT DAKPANEEL (Overhead Console) -->
+        <div class="cockpit-overhead">
+          <div class="overhead-bolts"><span></span><span></span></div>
+
+          <div class="cockpit-hud-group">
+            <span class="cockpit-hud-label">SCHILDEN</span>
+            <div id="v3-shields" class="cockpit-shields" aria-label="Schildpunten">
+              🛡️🛡️🛡️
+            </div>
+          </div>
+
+          <div class="cockpit-hud-center">
+            <div id="v3-rank-badge" class="rank-pill">🧑‍🚀 Ruimte-Kadet</div>
+            <div id="v3-sector-text" class="sector-pill">🚀 Sector 1</div>
+            <div id="v3-destroyed-text" class="destroyed-pill">☄️ 0</div>
+          </div>
+
+          <div class="cockpit-hud-group score-group">
+            <span class="cockpit-hud-label">KRISTALLEN</span>
+            <span class="cockpit-score-val">💎 <span id="v3-score-text">0</span></span>
+          </div>
+
+          <div class="overhead-bolts"><span></span><span></span></div>
+        </div>
+
+        <!-- HET COCKPIT VOORRAAM (3D Canopy Window) -->
+        <div id="v3-viewport" class="cockpit-viewport">
+          <!-- Bewegende sterrenhemel & warp-effect canvas -->
+          <canvas id="v3-space-canvas" class="space-canvas"></canvas>
+
+          <!-- Metalen cockpit raamstijlen & zijramen -->
+          <div class="canopy-frame-top"></div>
+          <div class="cockpit-strut strut-left"></div>
+          <div class="cockpit-strut strut-right"></div>
+          <div class="canopy-glare"></div>
+
+          <!-- Centraal HUD Richtkruis op het glas -->
+          <div class="hud-glass-overlay">
+            <div class="hud-corner hud-tl"></div>
+            <div class="hud-corner hud-tr"></div>
+            <div class="hud-corner hud-bl"></div>
+            <div class="hud-corner hud-br"></div>
+          </div>
+
+          <!-- Asteroïden in de ruimte (1, 2 of 3 tegelijk, sommige drijven weg) -->
+          <div id="v3-asteroids-stage" class="asteroids-stage">
+            <!-- Dynamisch 1 t/m 3 asteroïden met kristallen, plaatje en drift-timer -->
+          </div>
+
+          <!-- Vliegende kristallen & explosie-effecten laag -->
+          <div id="v3-fx-layer" class="v3-fx-layer"></div>
+
+          <!-- Laserstraal SVG overlay -->
+          <svg id="v3-laser-svg" class="laser-svg" viewBox="0 0 800 320" preserveAspectRatio="none">
+            <line id="v3-laser-left-glow" class="laser-beam-glow" x1="105" y1="305" x2="400" y2="150" />
+            <line id="v3-laser-right-glow" class="laser-beam-glow" x1="695" y1="305" x2="400" y2="150" />
+            <line id="v3-laser-left" class="laser-beam" x1="105" y1="305" x2="400" y2="150" />
+            <line id="v3-laser-right" class="laser-beam" x1="695" y1="305" x2="400" y2="150" />
+          </svg>
+
+          <!-- 3D Laser-boordkanonnen links en rechts voor het raam -->
+          <div id="v3-cannon-left" class="cockpit-turret turret-left">
+            <div class="turret-barrel"></div>
+            <div class="turret-body"></div>
+          </div>
+          <div id="v3-cannon-right" class="cockpit-turret turret-right">
+            <div class="turret-barrel"></div>
+            <div class="turret-body"></div>
+          </div>
+        </div>
+
+        <!-- HET SCHUINE RUIMTESCHIP DASHBOARD VOOR JE -->
+        <div class="cockpit-dashboard">
+          <div class="dashboard-bezel-top">
+            <span class="led-dot led-green"></span>
+            <span class="led-dot led-blue"></span>
+            <span class="bezel-label">⚡ BOORDCOMPUTER • LASER-SYSTEEM ACTIEF</span>
+            <span class="led-dot led-amber"></span>
+            <span class="led-dot led-green"></span>
+          </div>
+
+          <div class="dashboard-top-row">
+            <!-- Links: Radar & Doelwit Scanner met Luister-knop -->
+            <div class="dashboard-scanner">
+              <div class="scanner-header">
+                <span class="radar-sweep-dot"></span> DOELWIT-SCANNER
+              </div>
+              <div class="scanner-body">
+                <div id="v3-hud-pic" class="scanner-pic" title="Tik om het woord te horen"></div>
+                <button id="btn-v3-speak" class="scanner-speak-btn" type="button" title="Hoor het woord via de boordradio">
+                  🔊 <span>Hoor woord</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Midden: Laser-Energiecellen (de woordvakjes) -->
+            <div class="dashboard-slots-area">
+              <div class="laser-charge-header">
+                <span id="v3-feedback-bar" class="cockpit-feedback" aria-live="polite">
+                  Laad de energiecellen om de asteroïde te kraken!
+                </span>
+                <div class="charge-meter-wrap">
+                  <div id="v3-charge-fill" class="charge-meter-fill" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="dashboard-slots-row">
+                <div id="v3-word-slots" class="word-slots cockpit-slots"></div>
+                <button id="btn-v3-clear" class="cockpit-clear-btn" type="button" title="Energiecellen leegmaken">
+                  🔄 Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- Rechts: Grote Rode Vuur-knop -->
+            <div class="dashboard-fire-area">
+              <button id="btn-v3-fire" class="fire-laser-btn" type="button">
+                <span class="fire-icon">🔫</span>
+                <span class="fire-text">VUUR!</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Onderop: Het schuine bedieningspaneel met de lettertoetsen -->
+          <div class="dashboard-letters-panel">
+            <div class="dashboard-letters-header">
+              <span>🎛️ <strong>COCKPIT TOETSEN</strong> — tik of sleep naar de laser-cellen</span>
+              <label class="cockpit-digraph-toggle">
+                <input type="checkbox" id="chk-v3-digraphs" checked />
+                <span>Klankblokjes (aa, oe, ij...)</span>
+              </label>
+            </div>
+            <div id="v3-letter-bank" class="letter-bank cockpit-letter-bank">
+              <!-- Verlichte dashboard-lettertoetsen -->
+            </div>
+          </div>
         </div>
       </div>
     </section>

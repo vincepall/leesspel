@@ -39,9 +39,9 @@ html, body {
 }
 
 .app-container {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 14px 18px 28px;
+  padding: 12px 18px 22px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -220,15 +220,15 @@ html, body {
 
 .variants-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   flex: 1;
 }
 
 .game-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 18px 20px;
   box-shadow: var(--shadow-card);
   border: 3px solid var(--border-light);
   display: flex;
@@ -245,6 +245,20 @@ html, body {
 .variant-2-card {
   border-color: #FDBA74;
   background: linear-gradient(180deg, #FFFFFF 0%, #FFF7ED 100%);
+}
+
+.variant-3-card {
+  border-color: #818CF8;
+  background: linear-gradient(180deg, #0F172A 0%, #1E1B4B 100%);
+  color: #F8FAFC;
+}
+
+.variant-3-card h3 {
+  color: #FFFFFF !important;
+}
+
+.variant-3-card p {
+  color: #CBD5E1 !important;
 }
 
 .card-badge {
@@ -267,17 +281,28 @@ html, body {
   color: #C2410C;
 }
 
+.variant-3-card .card-badge {
+  background: #312E81;
+  color: #A5B4FC;
+  border: 1px solid #6366F1;
+}
+
 .card-preview {
   background: #FFFFFF;
   border: 2px dashed #CBD5E1;
   border-radius: 16px;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 14px;
   min-height: 74px;
+}
+
+.preview-space {
+  background: #1E293B;
+  border-color: #475569;
 }
 
 .preview-word {
@@ -1235,12 +1260,973 @@ html, body {
   flex-shrink: 0;
 }
 
+.btn-space {
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+  box-shadow: 0 6px 0 #3730A3;
+}
+
+/* ==========================================================================
+   VOLLEDIG SCHERM MODUS VOOR SPEL 3 (MAXIMALE SCHERMRUIMTE BENUTTEN)
+   ========================================================================== */
+body.cockpit-fullscreen {
+  background: #050811;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.cockpit-fullscreen .app-container {
+  max-width: 100%;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 6px 8px 8px;
+  margin: 0;
+}
+
+body.cockpit-fullscreen .top-bar {
+  background: #0F172A;
+  border-color: #334155;
+  padding: 5px 14px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+body.cockpit-fullscreen .logo-title h1 {
+  color: #F8FAFC;
+  font-size: 1.2rem;
+}
+
+body.cockpit-fullscreen .logo-icon {
+  font-size: 1.4rem;
+}
+
+body.cockpit-fullscreen .badge-lijn3 {
+  background: #1E293B;
+  color: #38BDF8;
+  border: 1px solid #0284C7;
+  font-size: 0.78rem;
+  padding: 2px 8px;
+}
+
+body.cockpit-fullscreen .icon-btn {
+  background: #1E293B;
+  border-color: #475569;
+  color: #F8FAFC;
+  padding: 4px 12px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+}
+
+body.cockpit-fullscreen #screen-game-v3 {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   SPEL VARIANT 3: RUIMTE-MIJNWERKER (3D RUIMTESCHIP COCKPIT)
+   ========================================================================== */
+.cockpit-shell {
+  background: #090D16;
+  border: 4px solid #334155;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 12px 32px rgba(2, 6, 23, 0.65),
+    inset 0 0 0 2px #475569,
+    inset 0 0 30px rgba(0, 0, 0, 0.8);
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.cockpit-shell.cockpit-hit {
+  border-color: #EF4444;
+  animation: cockpitHitShake 0.55s ease;
+}
+
+@keyframes cockpitHitShake {
+  0%, 100% { transform: translate(0, 0); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  15% { transform: translate(-12px, -5px); box-shadow: inset 0 0 70px rgba(239, 68, 68, 0.85); }
+  35% { transform: translate(12px, 6px); }
+  55% { transform: translate(-9px, 4px); box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.65); }
+  75% { transform: translate(7px, -4px); }
+}
+
+/* Bovenste Metalen Cockpit Dakpaneel (Overhead Console) */
+.cockpit-overhead {
+  background: linear-gradient(180deg, #334155 0%, #1E293B 60%, #0F172A 100%);
+  border-bottom: 3px solid #475569;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 6;
+  flex-shrink: 0;
+}
+
+.overhead-bolts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overhead-bolts span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748B;
+  box-shadow: inset 0 1px 2px #0F172A, 0 1px 0 #94A3B8;
+}
+
+.cockpit-hud-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cockpit-hud-label {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94A3B8;
+  letter-spacing: 1px;
+}
+
+.cockpit-shields {
+  display: flex;
+  gap: 5px;
+  font-size: 1.35rem;
+  background: #090D16;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 2px solid #38BDF8;
+  box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.shield-lost {
+  opacity: 0.18;
+  filter: grayscale(100%);
+}
+
+.cockpit-hud-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rank-pill {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: #F8FAFC;
+  border: 2px solid #A78BFA;
+  padding: 3px 12px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+}
+
+.sector-pill {
+  background: #0F172A;
+  color: #38BDF8;
+  border: 2px solid #0284C7;
+  padding: 3px 12px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.destroyed-pill {
+  background: #0F172A;
+  color: #CBD5E1;
+  border: 2px solid #475569;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.cockpit-score-val {
+  background: #090D16;
+  border: 2px solid #FACC15;
+  color: #FDE047;
+  padding: 3px 14px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: inset 0 0 10px rgba(250, 204, 21, 0.28);
+}
+
+/* ==========================================================================
+   HET RUIMTERAAM (3D CANOPY VIEWPORT) - MAXIMAAL PANORAMISCH VOORRAAM
+   ========================================================================== */
+.cockpit-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 220px;
+  background: radial-gradient(ellipse at 50% 40%, #0B1938 0%, #04091A 65%, #020617 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 64px 28px;
+}
+
+.space-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Bovenste schuine stalen raamlijst */
+.canopy-frame-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background: linear-gradient(180deg, #334155 0%, transparent 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Dikke schuine metalen cockpit-stijlen links en rechts */
+.cockpit-strut {
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  width: 44px;
+  background: linear-gradient(90deg, #0F172A 0%, #475569 45%, #334155 75%, #0F172A 100%);
+  border-left: 3px solid #64748B;
+  border-right: 3px solid #64748B;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.85);
+}
+
+.strut-left {
+  left: -14px;
+  transform: skewX(10deg);
+}
+
+.strut-right {
+  right: -14px;
+  transform: skewX(-10deg);
+}
+
+/* Subtiele glas-reflectie en holografisch HUD-vizier op het voorraam */
+.canopy-glare {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.05) 0%, transparent 32%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(2, 6, 23, 0.65) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hud-glass-overlay {
+  position: absolute;
+  inset: 16px 68px 20px;
+  pointer-events: none;
+  z-index: 2;
+  border: 1px dashed rgba(56, 189, 248, 0.22);
+  border-radius: 22px;
+}
+
+.hud-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: rgba(56, 189, 248, 0.5);
+  border-style: solid;
+}
+
+.hud-tl { top: -1px; left: -1px; border-width: 3px 0 0 3px; border-radius: 8px 0 0 0; }
+.hud-tr { top: -1px; right: -1px; border-width: 3px 3px 0 0; border-radius: 0 8px 0 0; }
+.hud-bl { bottom: -1px; left: -1px; border-width: 0 0 3px 3px; border-radius: 0 0 0 8px; }
+.hud-br { bottom: -1px; right: -1px; border-width: 0 3px 3px 0; border-radius: 0 0 8px 0; }
+
+/* 3D Laser-boordkanonnen links- en rechtsonder voor het raam */
+.cockpit-turret {
+  position: absolute;
+  bottom: -6px;
+  width: 76px;
+  height: 70px;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.08s ease;
+}
+
+.turret-left {
+  left: 64px;
+  transform: rotate(18deg);
+}
+
+.turret-right {
+  right: 64px;
+  transform: rotate(-18deg);
+}
+
+.turret-left.recoil {
+  transform: rotate(18deg) translateY(12px);
+}
+
+.turret-right.recoil {
+  transform: rotate(-18deg) translateY(12px);
+}
+
+.turret-barrel {
+  width: 18px;
+  height: 32px;
+  background: linear-gradient(90deg, #0284C7, #38BDF8, #0284C7);
+  border: 2px solid #BAE6FD;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.75);
+}
+
+.turret-body {
+  width: 62px;
+  height: 40px;
+  background: linear-gradient(180deg, #475569 0%, #1E293B 60%, #0F172A 100%);
+  border: 3px solid #94A3B8;
+  border-radius: 16px 16px 4px 4px;
+  box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.25);
+}
+
+/* Laserstralen SVG */
+.laser-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.laser-beam-glow {
+  stroke: #06B6D4;
+  stroke-width: 22;
+  stroke-linecap: round;
+  opacity: 0;
+  filter: blur(6px);
+  transition: opacity 0.06s ease;
+}
+
+.laser-beam {
+  stroke: #ECFEFF;
+  stroke-width: 7;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.06s ease;
+}
+
+.laser-beam.firing,
+.laser-beam-glow.firing {
+  opacity: 1;
+}
+
+/* Vliegende kristallen bij explosie */
+.v3-fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.flying-gem {
+  position: absolute;
+  font-size: 2.2rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: #FDE047;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  animation: flyGemUp 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes flyGemUp {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+  60% { transform: translate(-50%, -115%) scale(1.25); opacity: 1; }
+  100% { transform: translate(-50%, -160%) scale(0.9); opacity: 0; }
+}
+
+/* ==========================================================================
+   ASTEROÏDEN MET KRISTALLEN & DRIFT-WEG TIMER
+   ========================================================================== */
+.asteroids-stage {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 32px;
+  width: 100%;
+  height: 100%;
+  flex-wrap: wrap;
+}
+
+.asteroid-card {
+  position: relative;
+  width: clamp(156px, 23vh, 224px);
+  height: clamp(156px, 23vh, 224px);
+  border-radius: 42% 58% 48% 52% / 52% 44% 56% 48%;
+  background:
+    radial-gradient(circle at 25% 28%, rgba(148, 163, 184, 0.35) 0%, transparent 22%),
+    radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.65) 0%, transparent 28%),
+    radial-gradient(circle at 35% 30%, #64748B 0%, #475569 52%, #1E293B 100%);
+  border: 4px solid #94A3B8;
+  box-shadow:
+    inset -12px -14px 22px rgba(2, 6, 23, 0.85),
+    inset 6px 6px 14px rgba(255, 255, 255, 0.18),
+    0 14px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: asteroidSpawnIn 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1), asteroidFloat 3.8s ease-in-out infinite;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.4s ease;
+}
+
+/* Laat meerdere asteroïden op verschillende hoogtes in de ruimte zweven */
+.asteroid-card:nth-child(1) {
+  margin-top: -22px;
+}
+
+.asteroid-card:nth-child(2) {
+  margin-top: 26px;
+  animation-delay: 0s, -1.3s;
+  border-radius: 54% 46% 55% 45% / 46% 56% 44% 54%;
+}
+
+.asteroid-card:nth-child(3) {
+  margin-top: -14px;
+  animation-delay: 0s, -2.5s;
+  border-radius: 46% 54% 43% 57% / 55% 45% 55% 45%;
+}
+
+@keyframes asteroidSpawnIn {
+  from { transform: scale(0.25) translateY(-40px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes asteroidFloat {
+  0%, 100% { transform: translateY(0px) rotate(-1.5deg); }
+  50% { transform: translateY(-12px) rotate(1.5deg); }
+}
+
+/* Asteroïde die niet op tijd geraakt is drijft rustig weg de ruimte in */
+.asteroid-card.drifting-away {
+  animation: asteroidDriftAway 0.75s ease-in forwards !important;
+  pointer-events: none;
+}
+
+@keyframes asteroidDriftAway {
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  100% { transform: scale(0.2) translateY(-80px) rotate(25deg); opacity: 0; }
+}
+
+/* Kristal-soorten op de asteroïden */
+.asteroid-card.crystal-blue {
+  border-color: #38BDF8;
+}
+.asteroid-card.crystal-purple {
+  border-color: #C084FC;
+  background:
+    radial-gradient(circle at 35% 30%, #6B21A8 0%, #4C1D95 52%, #1E1B4B 100%);
+}
+.asteroid-card.crystal-gold {
+  border-color: #FACC15;
+  background:
+    radial-gradient(circle at 35% 30%, #B45309 0%, #78350F 52%, #271705 100%);
+}
+
+/* Geselecteerde asteroïde (met doelvizier) */
+.asteroid-card.targeted {
+  box-shadow:
+    0 0 0 6px rgba(34, 211, 238, 0.42),
+    0 0 36px rgba(34, 211, 238, 0.8),
+    inset -10px -12px 18px rgba(2, 6, 23, 0.8);
+}
+
+.asteroid-reticle {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #06B6D4;
+  color: #082F49;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 2px solid #ECFEFF;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 3;
+}
+
+.asteroid-card.targeted .asteroid-reticle {
+  opacity: 1;
+}
+
+.asteroid-crystal-badge,
+.asteroid-gem-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #FDE047;
+  font-family: var(--font-heading);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 2px solid #38BDF8;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.asteroid-pic-bubble {
+  width: clamp(98px, 14.5vh, 138px);
+  height: clamp(98px, 14.5vh, 138px);
+  border-radius: 26px;
+  background: #FFFFFF;
+  border: 3px solid #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(3.4rem, 7.2vh, 4.7rem);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.asteroid-pic-bubble .pic-svg {
+  width: 78%;
+  height: 78%;
+}
+
+.asteroid-speak-mini {
+  position: absolute;
+  bottom: 12px;
+  right: 4px;
+  background: #FEF08A;
+  border: 2px solid #CA8A04;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #713F12;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Drift-timer balkje onderaan elke asteroïde */
+.asteroid-drift-bar {
+  position: absolute;
+  bottom: -10px;
+  width: 92px;
+  height: 7px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid #64748B;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.asteroid-drift-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #22C55E, #38BDF8);
+  transition: width 0.3s linear, background 0.3s ease;
+}
+
+.asteroid-drift-fill.low-time,
+.asteroid-drift-fill.drifting-low {
+  background: linear-gradient(90deg, #EF4444, #F59E0B);
+}
+
+/* Explosie bij vernietiging */
+.asteroid-card.exploding {
+  animation: asteroidExplode 0.55s ease forwards !important;
+  pointer-events: none;
+}
+
+@keyframes asteroidExplode {
+  0% { transform: scale(1.08); filter: brightness(2.2); opacity: 1; }
+  50% { transform: scale(1.42) rotate(14deg); background: #22D3EE; opacity: 0.9; }
+  100% { transform: scale(0.15); opacity: 0; }
+}
+
+/* Botsing tegen het ruimteschip bij fout woord */
+.asteroid-card.crashing {
+  animation: asteroidCrash 0.55s ease !important;
+}
+
+@keyframes asteroidCrash {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.45) translateY(28px); border-color: #EF4444; box-shadow: 0 0 40px #EF4444; }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   HET SCHUINE 3D COCKPIT DASHBOARD ONDERAAN (COMPACT ZODAT HET RAAM GROOT IS)
+   ========================================================================== */
+.cockpit-dashboard {
+  background: linear-gradient(180deg, #334155 0%, #1E293B 16%, #0F172A 100%);
+  border-top: 4px solid #475569;
+  box-shadow: inset 0 4px 12px rgba(255, 255, 255, 0.12);
+  padding: 8px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 6;
+  flex-shrink: 0;
+}
+
+.dashboard-bezel-top {
+  display: none;
+}
+
+.dashboard-top-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Links: Radar & Doelwit Scanner */
+.dashboard-scanner {
+  background: radial-gradient(circle at center, #082F49 0%, #020617 100%);
+  border: 3px solid #0284C7;
+  border-radius: 16px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 170px;
+  box-shadow: inset 0 0 20px rgba(14, 165, 233, 0.35), 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.scanner-header {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38BDF8;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radar-sweep-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 8px #22C55E;
+  animation: radarPulse 1.2s infinite alternate;
+}
+
+@keyframes radarPulse {
+  from { opacity: 0.35; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.2); }
+}
+
+.scanner-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scanner-pic {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 2px solid #38BDF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  cursor: pointer;
+}
+
+.scanner-pic .pic-svg {
+  width: 48px;
+  height: 48px;
+}
+
+.scanner-speak-btn {
+  background: linear-gradient(180deg, #0284C7 0%, #0369A1 100%);
+  border: 2px solid #38BDF8;
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  padding: 7px 10px;
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.scanner-speak-btn:active {
+  transform: translateY(2px);
+}
+
+/* Midden: Laser-Energiecellen (de woordvakjes) */
+.dashboard-slots-area {
+  flex: 1;
+  min-width: 240px;
+  background: #090D16;
+  border: 3px solid #334155;
+  border-radius: 16px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  box-shadow: inset 0 4px 14px rgba(0, 0, 0, 0.75);
+}
+
+.laser-charge-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cockpit-feedback {
+  font-family: var(--font-heading);
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #BAE6FD;
+  min-height: 20px;
+}
+
+.cockpit-feedback.good {
+  color: #4ADE80;
+}
+
+.cockpit-feedback.warn {
+  color: #FCA5A5;
+}
+
+.charge-meter-wrap {
+  width: 160px;
+  height: 8px;
+  background: #1E293B;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #475569;
+  flex-shrink: 0;
+}
+
+.charge-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #06B6D4, #22C55E);
+  box-shadow: 0 0 10px #22C55E;
+  transition: width 0.2s ease;
+}
+
+.dashboard-slots-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cockpit-slots .letter-slot {
+  min-width: 58px;
+  height: 64px;
+  font-size: 2rem;
+  background: #0F172A;
+  border: 3px solid #0284C7;
+  border-bottom-width: 5px;
+  color: #F8FAFC;
+  box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.28);
+}
+
+.cockpit-slots .letter-slot.filled {
+  background: #FEF08A;
+  border-color: #EAB308;
+  color: #713F12;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+}
+
+.cockpit-clear-btn {
+  background: #1E293B;
+  border: 2px solid #475569;
+  color: #CBD5E1;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Rechts: De Grote Laser-Vuurknop */
+.dashboard-fire-area {
+  display: flex;
+  align-items: center;
+}
+
+.fire-laser-btn {
+  height: 100%;
+  min-height: 78px;
+  min-width: 132px;
+  padding: 8px 18px;
+  background: linear-gradient(180deg, #EF4444 0%, #B91C1C 100%);
+  border: 3px solid #FCA5A5;
+  border-bottom-width: 7px;
+  border-bottom-color: #7F1D1D;
+  border-radius: 18px;
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.45);
+  transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.fire-laser-btn.laser-ready {
+  background: linear-gradient(180deg, #22C55E 0%, #15803D 100%);
+  border-color: #86EFAC;
+  border-bottom-color: #14532D;
+  box-shadow: 0 0 28px rgba(34, 197, 94, 0.8);
+  animation: fireBtnPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes fireBtnPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.fire-laser-btn:active {
+  transform: translateY(3px);
+}
+
+.fire-icon {
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+/* Onderste paneel: Schuine Cockpit Letter-Console */
+.dashboard-letters-panel {
+  background: linear-gradient(180deg, #090D16 0%, #111827 100%);
+  border: 2px solid #334155;
+  border-top-color: #0284C7;
+  border-radius: 16px;
+  padding: 8px 14px;
+  box-shadow: inset 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+.dashboard-letters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  color: #94A3B8;
+}
+
+.cockpit-digraph-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #38BDF8;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cockpit-digraph-toggle input {
+  width: 17px;
+  height: 17px;
+  accent-color: #38BDF8;
+}
+
+.cockpit-letter-bank {
+  min-height: 64px;
+  gap: 10px;
+}
+
+.cockpit-letter-bank .letter-tile {
+  min-width: 58px;
+  height: 62px;
+  font-size: 1.95rem;
+}
+
+/* Op hele lage of smalle schermen (bijv. telefoon) toestaan om te scrollen indien nodig */
+@media (max-height: 640px), (max-width: 760px) {
+  body.cockpit-fullscreen {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+  body.cockpit-fullscreen .app-container {
+    height: auto;
+  }
+  .cockpit-viewport {
+    min-height: 300px;
+  }
+}
+
 /* === RESPONSIVE VOOR IPAD / TABLET & MOBIEL === */
+@media (max-width: 860px) {
+  .variants-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .level-pills {
     grid-template-columns: repeat(2, 1fr);
   }
-  .variants-grid,
   .mode-choices {
     grid-template-columns: 1fr;
   }
@@ -1248,16 +2234,33 @@ html, body {
     font-size: 2.8rem;
   }
   .letter-slot {
-    min-width: 58px;
-    height: 66px;
-    font-size: 1.95rem;
+    min-width: 54px;
+    height: 60px;
+    font-size: 1.85rem;
   }
   .letter-tile {
-    min-width: 56px;
-    height: 64px;
-    font-size: 1.9rem;
+    min-width: 54px;
+    height: 60px;
+    font-size: 1.85rem;
   }
   .install-btn span {
     display: none;
+  }
+  .asteroid-card {
+    width: 138px;
+    height: 138px;
+  }
+  .asteroid-pic-bubble {
+    width: 84px;
+    height: 84px;
+    font-size: 3rem;
+  }
+  .fire-laser-btn {
+    width: 100%;
+    flex-direction: row;
+    min-height: 58px;
+  }
+  .dashboard-fire-area {
+    width: 100%;
   }
 }

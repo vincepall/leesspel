@@ -35,8 +35,6 @@ const WORDS_DATA = [
   { word: "sap", level: 1, theme: "Eten", emoji: "🧃", bg: "#FFE8CC" },
   { word: "peen", level: 1, theme: "Eten", emoji: "🥕", bg: "#FFE8CC" },
   { word: "bes", level: 1, theme: "Eten", emoji: "🫐", bg: "#E5DBFF" },
-  { word: "ei", level: 2, theme: "Eten", emoji: "🥚", bg: "#FFF9DB" },
-  { word: "ui", level: 2, theme: "Eten", emoji: "🧅", bg: "#FFF3BF" },
   { word: "mais", level: 2, theme: "Eten", emoji: "🌽", bg: "#FFF9DB" },
 
   { word: "bus", level: 1, theme: "Vervoer", emoji: "🚌", bg: "#FFF3BF" },
