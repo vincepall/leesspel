@@ -151,6 +151,304 @@ const WORDS_DATA = [
   { word: "zeil", level: 2, theme: "Vervoer", emoji: "⛵", customSvg: "zeil", bg: "#D0EBFF" }
 ];
 
+// Korte Lijn 3 zinnen voor Groep 3 (SBO) - Spel 4
+// Opgebouwd per Lijn 3 niveau (1 = Start/Thema 1-3, 2 = Midden/Thema 4-6, 3 = Verder/Thema 7+)
+const SENTENCES_DATA = [
+  // === NIVEAU 1: Start (Thema 1 - 3: korte klankzuivere woorden) ===
+  {
+    id: "zin_01",
+    sentence: "ik zie de maan",
+    level: 1,
+    scene: ["👀", "🌙"],
+    distractors: ["zon", "boom"],
+    bg: "#E5DBFF"
+  },
+  {
+    id: "zin_02",
+    sentence: "de aap zit in de boom",
+    level: 1,
+    scene: ["🐒", "🌳"],
+    distractors: ["poes", "op"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_03",
+    sentence: "ik eet een peer",
+    level: 1,
+    scene: ["😋", "🍐"],
+    distractors: ["noot", "zie"],
+    bg: "#EBFBEE"
+  },
+  {
+    id: "zin_04",
+    sentence: "de vis zwemt in zee",
+    level: 1,
+    scene: ["🐟", "🌊"],
+    distractors: ["kip", "bos"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_05",
+    sentence: "de poes zit op de doos",
+    level: 1,
+    scene: ["🐱", "📦"],
+    distractors: ["aap", "tas"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_06",
+    sentence: "ik zit in de bus",
+    level: 1,
+    scene: ["🧒", "🚌"],
+    distractors: ["boot", "op"],
+    bg: "#FFF3BF"
+  },
+  {
+    id: "zin_07",
+    sentence: "de bij zit op de roos",
+    level: 1,
+    scene: ["🐝", "🌹"],
+    distractors: ["mug", "boom"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_08",
+    sentence: "ik lees een boek",
+    level: 1,
+    scene: ["🧒", "📖"],
+    distractors: ["eet", "pen"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_09",
+    sentence: "de boot vaart op zee",
+    level: 1,
+    scene: ["⛵", "🌊"],
+    distractors: ["bus", "in"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_10",
+    sentence: "de soep zit in de pan",
+    level: 1,
+    scene: ["🥣", "🍳"],
+    distractors: ["koek", "doos"],
+    bg: "#FFE8CC"
+  },
+  {
+    id: "zin_11",
+    sentence: "ik pak mijn rode jas",
+    level: 1,
+    scene: ["🧒", "🧥"],
+    distractors: ["sok", "zie"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_12",
+    sentence: "de koe staat in de wei",
+    level: 1,
+    scene: ["🐄", "🌿"],
+    distractors: ["vos", "zee"],
+    bg: "#E5F9E0"
+  },
+
+  // === NIVEAU 2: Midden (Thema 4 - 6: met ui, uu, ei, ou, ng, nk, f, g, l) ===
+  {
+    id: "zin_13",
+    sentence: "ik ren naar huis",
+    level: 2,
+    scene: ["🏃", "🏡"],
+    distractors: ["bos", "loop"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_14",
+    sentence: "de muis eet de kaas",
+    level: 2,
+    scene: ["🐭", "🧀"],
+    distractors: ["poes", "koek"],
+    bg: "#FFF3BF"
+  },
+  {
+    id: "zin_15",
+    sentence: "de uil zit op de tak",
+    level: 2,
+    scene: ["🦉", "🌿"],
+    distractors: ["duif", "bank"],
+    bg: "#FFE8CC"
+  },
+  {
+    id: "zin_16",
+    sentence: "de hond rent in het bos",
+    level: 2,
+    scene: ["🐶", "🌲"],
+    distractors: ["poes", "huis"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_17",
+    sentence: "ik zit lekker op de bank",
+    level: 2,
+    scene: ["🧒", "🛋️"],
+    distractors: ["bed", "sta"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_18",
+    sentence: "het vuur is heel heet",
+    level: 2,
+    scene: ["🔥", "🥵"],
+    distractors: ["koud", "ijs"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_19",
+    sentence: "de duif vliegt in de lucht",
+    level: 2,
+    scene: ["🕊️", "🌤️"],
+    distractors: ["vis", "zee"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_20",
+    sentence: "ik was mijn hand met zeep",
+    level: 2,
+    scene: ["🧼", "✋"],
+    distractors: ["voet", "hout"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_21",
+    sentence: "de geit staat bij het hek",
+    level: 2,
+    scene: ["🐐", "🪵"],
+    distractors: ["koe", "dak"],
+    bg: "#F8F9FA"
+  },
+  {
+    id: "zin_22",
+    sentence: "ik slaap in mijn bed",
+    level: 2,
+    scene: ["😴", "🛏️"],
+    distractors: ["tent", "ren"],
+    bg: "#E5DBFF"
+  },
+  {
+    id: "zin_23",
+    sentence: "de haai zwemt in de zee",
+    level: 2,
+    scene: ["🦈", "🌊"],
+    distractors: ["hond", "boom"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_24",
+    sentence: "ik zet mijn warme muts op",
+    level: 2,
+    scene: ["🧒", "🧶"],
+    distractors: ["pet", "jas"],
+    bg: "#FFE3E3"
+  },
+
+  // === NIVEAU 3: Verder (Thema 7+: langere zinnen & medeklinkerclusters) ===
+  {
+    id: "zin_25",
+    sentence: "ik fiets snel naar school",
+    level: 3,
+    scene: ["🚲", "🏫"],
+    distractors: ["loop", "bed"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_26",
+    sentence: "de trein rijdt op het spoor",
+    level: 3,
+    scene: ["🚂", "🛤️"],
+    distractors: ["boot", "water"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_27",
+    sentence: "het paard rent in de wei",
+    level: 3,
+    scene: ["🐴", "🌱"],
+    distractors: ["varken", "zee"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_28",
+    sentence: "ik eet een stuk taart",
+    level: 3,
+    scene: ["😋", "🎂"],
+    distractors: ["brood", "drink"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_29",
+    sentence: "de kikker springt in het water",
+    level: 3,
+    scene: ["🐸", "💦"],
+    distractors: ["slak", "vuur"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_30",
+    sentence: "ik knip met de schaar",
+    level: 3,
+    scene: ["✂️", "📄"],
+    distractors: ["kwast", "plak"],
+    bg: "#FFE3E3"
+  },
+  {
+    id: "zin_31",
+    sentence: "de bloem groeit in de tuin",
+    level: 3,
+    scene: ["🌻", "🏡"],
+    distractors: ["wolk", "school"],
+    bg: "#FFF3BF"
+  },
+  {
+    id: "zin_32",
+    sentence: "ik zit op de stoel",
+    level: 3,
+    scene: ["🧒", "🪑"],
+    distractors: ["bank", "lig"],
+    bg: "#FFE8CC"
+  },
+  {
+    id: "zin_33",
+    sentence: "de slang kruipt in het gras",
+    level: 3,
+    scene: ["🐍", "🌱"],
+    distractors: ["krab", "sneeuw"],
+    bg: "#D3F9D8"
+  },
+  {
+    id: "zin_34",
+    sentence: "ik drink een glas melk",
+    level: 3,
+    scene: ["🥛", "😋"],
+    distractors: ["friet", "eet"],
+    bg: "#D0EBFF"
+  },
+  {
+    id: "zin_35",
+    sentence: "ik zie een gouden kroon",
+    level: 3,
+    scene: ["👀", "👑"],
+    distractors: ["pet", "schoen"],
+    bg: "#FFF3BF"
+  },
+  {
+    id: "zin_36",
+    sentence: "het schaap staat in het gras",
+    level: 3,
+    scene: ["🐑", "🌱"],
+    distractors: ["paard", "bos"],
+    bg: "#F8F9FA"
+  }
+];
+
 // Aangepaste SVG-illustraties voor woorden waarvan een emoji niet eenduidig genoeg is
 const CUSTOM_SVGS = {
   tak: `<svg viewBox="0 0 120 120" width="100%" height="100%">

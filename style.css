@@ -220,7 +220,7 @@ html, body {
 
 .variants-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   flex: 1;
 }
@@ -261,6 +261,17 @@ html, body {
   color: #CBD5E1 !important;
 }
 
+.variant-4-card {
+  border-color: #C084FC;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5FF 100%);
+}
+
+.variant-5-card {
+  border-color: #F59E0B;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 100%);
+  grid-column: 1 / -1;
+}
+
 .card-badge {
   align-self: flex-start;
   font-family: var(--font-heading);
@@ -285,6 +296,17 @@ html, body {
   background: #312E81;
   color: #A5B4FC;
   border: 1px solid #6366F1;
+}
+
+.variant-4-card .card-badge {
+  background: #F3E8FF;
+  color: #7E22CE;
+}
+
+.variant-5-card .card-badge {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #F59E0B;
 }
 
 .card-preview {
@@ -345,6 +367,64 @@ html, body {
   color: #713F12;
 }
 
+.preview-sentence {
+  background: #FAF5FF;
+  border-color: #D8B4FE;
+  flex-wrap: wrap;
+}
+
+.preview-word-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.preview-word-chips span {
+  padding: 4px 10px;
+  background: #F3E8FF;
+  border: 2px solid #C084FC;
+  border-bottom-width: 4px;
+  border-radius: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #581C87;
+}
+
+.preview-v5 {
+  background: #FFFBEB;
+  border-color: #FCD34D;
+  flex-wrap: wrap;
+}
+
+.preview-v5-groups {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.preview-v5-group {
+  display: inline-flex;
+  gap: 3px;
+  background: #FFFFFF;
+  border: 2px solid #F59E0B;
+  border-radius: 10px;
+  padding: 4px 6px;
+}
+
+.preview-v5-group em {
+  font-style: normal;
+  background: #FEF08A;
+  border: 1.5px solid #EAB308;
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #713F12;
+}
+
 .game-card h3 {
   font-family: var(--font-heading);
   font-size: 1.4rem;
@@ -393,6 +473,16 @@ html, body {
 .btn-blue {
   background: var(--primary-blue);
   box-shadow: 0 6px 0 var(--primary-blue-dark);
+}
+
+.btn-purple {
+  background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%);
+  box-shadow: 0 6px 0 #581C87;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 6px 0 #92400E;
 }
 
 .secondary-btn {
@@ -2216,6 +2306,329 @@ body.cockpit-fullscreen #screen-game-v3 {
   }
 }
 
+/* ==========================================================================
+   SPEL VARIANT 4: KORTE LIJN 3 ZINNEN (LEZEN & ZIN BOUWEN)
+   ========================================================================== */
+.sentence-prompt-card {
+  border-color: #D8B4FE;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5FF 100%);
+  padding: 20px 24px;
+}
+
+.sentence-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+}
+
+.target-sentence {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #F3E8FF;
+  border: 3px solid #C084FC;
+  border-radius: 22px;
+  padding: 12px 20px;
+}
+
+.sentence-word-btn {
+  background: #FFFFFF;
+  border: 2px solid #D8B4FE;
+  border-bottom-width: 4px;
+  border-radius: 14px;
+  padding: 6px 14px;
+  font-family: var(--font-school);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #4C1D95;
+  display: inline-block;
+}
+
+.sentence-speak-btn {
+  background: #F3E8FF;
+  border-color: #A855F7;
+  color: #6B21A8;
+}
+
+/* Scène-illustratie (2 bij elkaar horende emoji's die het verhaaltje uitbeelden) */
+.scene-pair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.scene-emoji-main {
+  font-size: 4.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+}
+
+.scene-emoji-sub {
+  font-size: 4.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+}
+
+.sentence-scene-box {
+  width: 210px;
+  height: 145px;
+  padding: 10px;
+}
+
+.sentence-scene-box .scene-emoji-main,
+.sentence-scene-box .scene-emoji-sub {
+  font-size: 3.8rem;
+}
+
+/* Zins-vakjes en sleepbare woordkaartjes (Speelvorm B: Zin bouwen) */
+.sentence-slots-container {
+  padding: 18px 20px;
+  background: #FAF5FF;
+  border-color: #C084FC;
+}
+
+.sentence-slots {
+  gap: 10px;
+}
+
+.sentence-slot {
+  min-width: 96px;
+  height: 68px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 3px dashed #A855F7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-school);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1E293B;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.sentence-slot.highlight-drop {
+  border-style: solid;
+  border-color: #9333EA;
+  background: #F3E8FF;
+  transform: scale(1.06);
+}
+
+.sentence-slot.filled {
+  border-style: solid;
+  border-color: #EAB308;
+  border-bottom-width: 6px;
+  border-bottom-color: #CA8A04;
+  background: #FEF08A;
+  color: #713F12;
+  cursor: grab;
+}
+
+.sentence-slot.slot-correct {
+  background: #DCFCE7 !important;
+  border-color: #22C55E !important;
+  border-bottom-color: #15803D !important;
+  color: #14532D !important;
+  cursor: default;
+}
+
+.sentence-slot.slot-wrong {
+  background: #FEE2E2 !important;
+  border-color: #EF4444 !important;
+  color: #991B1B !important;
+  animation: shakeWrong 0.45s ease;
+}
+
+.sentence-word-bank {
+  gap: 12px;
+}
+
+.word-tile {
+  min-width: 92px;
+  height: 66px;
+  padding: 0 18px;
+  background: #FFFFFF;
+  border: 3px solid #C084FC;
+  border-bottom-width: 6px;
+  border-bottom-color: #9333EA;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-school);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #4C1D95;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 4px 10px rgba(147, 51, 234, 0.12);
+  transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.word-tile:active {
+  transform: scale(0.95);
+}
+
+.word-tile.used {
+  opacity: 0.22;
+  pointer-events: none;
+  transform: scale(0.92);
+}
+
+.dragging-word-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  transform: translate(-50%, -65%) scale(1.08);
+  padding: 10px 22px;
+  background: #FEF08A;
+  border: 3px solid #EAB308;
+  border-bottom-width: 6px;
+  border-radius: 16px;
+  font-family: var(--font-school);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #713F12;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   SPEL VARIANT 5: ZIN MAKEN MET LOSSE LETTERS (GEGROEPEERD PER WOORD)
+   ========================================================================== */
+.v5-status-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.v5-digraph-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #92400E;
+  cursor: pointer;
+}
+
+.v5-digraph-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #D97706;
+}
+
+.v5-sentence-board {
+  background: #FFFBEB;
+  border: 3px solid #FCD34D;
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.v5-word-groups {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.v5-word-group-card {
+  background: #FFFFFF;
+  border: 3px solid #CBD5E1;
+  border-radius: 20px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 6px 16px rgba(30, 41, 59, 0.06);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.v5-word-group-card.word-filled {
+  border-color: #F59E0B;
+  background: #FFFEF5;
+}
+
+.v5-word-group-card.word-locked {
+  border-color: #22C55E;
+  background: #F0FDF4;
+}
+
+.v5-group-label {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.v5-word-group-card.word-locked .v5-group-label {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.v5-group-slots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed #E2E8F0;
+  width: 100%;
+}
+
+.v5-group-slots .letter-slot {
+  min-width: 52px;
+  height: 60px;
+  font-size: 1.85rem;
+}
+
+.v5-group-bank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 58px;
+  max-width: 235px;
+}
+
+.v5-group-bank .letter-tile {
+  min-width: 50px;
+  height: 56px;
+  font-size: 1.8rem;
+}
+
+.v5-action-row {
+  gap: 14px;
+}
+
 /* === RESPONSIVE VOOR IPAD / TABLET & MOBIEL === */
 @media (max-width: 860px) {
   .variants-grid {
@@ -2232,6 +2645,21 @@ body.cockpit-fullscreen #screen-game-v3 {
   }
   .target-word {
     font-size: 2.8rem;
+  }
+  .sentence-word-btn {
+    font-size: 1.65rem;
+    padding: 5px 10px;
+  }
+  .sentence-slot,
+  .word-tile {
+    min-width: 74px;
+    height: 56px;
+    font-size: 1.5rem;
+    padding: 0 12px;
+  }
+  .scene-emoji-main,
+  .scene-emoji-sub {
+    font-size: 3.3rem;
   }
   .letter-slot {
     min-width: 54px;

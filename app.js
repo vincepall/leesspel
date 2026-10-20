@@ -54,6 +54,35 @@
       practicedWords: [],
       nextSpawnAt: 0,
       warpUntil: 0
+    },
+
+    // Variant 4 status (Korte Lijn 3 Zinnen: 'read' = 10 rondes, 'build' = 5 rondes)
+    v4: {
+      mode: "read",           // 'read' (zin lezen & plaatje kiezen) of 'build' (zin bouwen met woorden)
+      totalRounds: 10,
+      roundIndex: 0,
+      score: 0,
+      sentences: [],
+      canScoreThisRound: true,
+      mistakesThisRound: 0,
+      roundFinished: false,
+      targetWords: [],        // woorden van de huidige zin in 'build' modus
+      bankTiles: [],          // woordkaartjes in 'build' modus: { id, text, used }
+      slotValues: [],         // geplaatste woorden in 'build' modus: { tileId, text, locked } of null
+      results: []
+    },
+
+    // Variant 5 status (Zin maken met losse letters gegroepeerd per woord: 5 rondes, 2 pt/ronde)
+    v5: {
+      totalRounds: 5,
+      roundIndex: 0,
+      score: 0,
+      useDigraphs: true,
+      sentences: [],
+      wordGroups: [],         // array van { wordIndex, wordText, targetUnits, slotValues, bankTiles }
+      mistakesThisRound: 0,
+      roundFinished: false,
+      results: []
     }
   };
 
@@ -188,6 +217,26 @@
     }
   }
 
+  function speakSentence(sentObj) {
+    if (!state.soundEnabled || !sentObj) return;
+    try {
+      if (currentWordAudio) {
+        currentWordAudio.pause();
+        currentWordAudio.currentTime = 0;
+      }
+      const audio = new Audio(`audio/${encodeURIComponent(sentObj.id)}.mp3`);
+      currentWordAudio = audio;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          speakFallbackTTS(sentObj.sentence);
+        });
+      }
+    } catch (_) {
+      speakFallbackTTS(sentObj.sentence);
+    }
+  }
+
   // --- Hulpfuncties ---
   function shuffle(array) {
     const arr = [...array];
@@ -206,11 +255,29 @@
     return WORDS_DATA.filter(w => w.level === targetLevel);
   }
 
+  function getFilteredSentences() {
+    if (state.level === "all") {
+      return [...SENTENCES_DATA];
+    }
+    const targetLevel = parseInt(state.level, 10);
+    return SENTENCES_DATA.filter(s => s.level === targetLevel);
+  }
+
   function renderPictureHTML(wordObj) {
     if (wordObj.customSvg && CUSTOM_SVGS[wordObj.customSvg]) {
       return `<div class="pic-svg">${CUSTOM_SVGS[wordObj.customSvg]}</div>`;
     }
     return `<span class="pic-emoji" role="img" aria-label="${wordObj.word}">${wordObj.emoji}</span>`;
+  }
+
+  function renderSceneHTML(sentObj) {
+    const [e1, e2] = sentObj.scene || ["📖", "⭐"];
+    return `
+      <div class="scene-pair" role="img" aria-label="${sentObj.sentence}">
+        <span class="scene-emoji-main">${e1}</span>
+        <span class="scene-emoji-sub">${e2}</span>
+      </div>
+    `;
   }
 
   // Splits een woord in losse letters of in Lijn 3 klankblokjes
@@ -243,9 +310,12 @@
   const screens = {
     menu: document.getElementById("screen-menu"),
     v2Setup: document.getElementById("screen-v2-setup"),
+    v4Setup: document.getElementById("screen-v4-setup"),
     gameV1: document.getElementById("screen-game-v1"),
     gameV2: document.getElementById("screen-game-v2"),
     gameV3: document.getElementById("screen-game-v3"),
+    gameV4: document.getElementById("screen-game-v4"),
+    gameV5: document.getElementById("screen-game-v5"),
     result: document.getElementById("screen-result")
   };
   const btnHome = document.getElementById("btn-home");
@@ -1955,9 +2025,1085 @@
   }
 
   // ==========================================================================
-  // EINDSCHERM & CONFETTI (Variant 1 & 2)
+  // VARIANT 4: KORTE LIJN 3 ZINNEN (Zin Lezen & Plaatje Kiezen / Zin Bouwen)
   // ==========================================================================
-  function showResultsScreen(score, maxScore, practicedWords) {
+  function startVariant4() {
+    state.currentVariant = 4;
+    const v4 = state.v4;
+    v4.totalRounds = v4.mode === "read" ? 10 : 5;
+    v4.roundIndex = 0;
+    v4.score = 0;
+    v4.results = [];
+
+    const pool = shuffle(getFilteredSentences());
+    v4.sentences = pool.slice(0, v4.totalRounds);
+
+    showScreen("gameV4");
+    loadVariant4Round();
+  }
+
+  function loadVariant4Round() {
+    const v4 = state.v4;
+    const currentSentObj = v4.sentences[v4.roundIndex];
+    v4.canScoreThisRound = true;
+    v4.mistakesThisRound = 0;
+    v4.roundFinished = false;
+
+    // HUD bijwerken
+    document.getElementById("v4-round-text").textContent = `${v4.roundIndex + 1} / ${v4.totalRounds}`;
+    document.getElementById("v4-score-text").textContent = v4.score;
+    renderProgressDots("v4-progress-dots", v4.totalRounds, v4.roundIndex, v4.results);
+
+    const readArea = document.getElementById("v4-read-area");
+    const buildArea = document.getElementById("v4-build-area");
+
+    if (v4.mode === "read") {
+      readArea.classList.remove("hidden");
+      buildArea.classList.add("hidden");
+      loadVariant4ReadMode(currentSentObj);
+    } else {
+      readArea.classList.add("hidden");
+      buildArea.classList.remove("hidden");
+      loadVariant4BuildMode(currentSentObj);
+    }
+  }
+
+  // --- Speelvorm A: Zin lezen & juiste plaatje kiezen (10 rondes, 1 pt/ronde) ---
+  function loadVariant4ReadMode(currentSentObj) {
+    const sentContainer = document.getElementById("v4-target-sentence");
+    sentContainer.innerHTML = "";
+
+    const words = currentSentObj.sentence.split(" ");
+    words.forEach(w => {
+      const wordSpan = document.createElement("span");
+      wordSpan.className = "sentence-word-btn";
+      wordSpan.textContent = w;
+      sentContainer.appendChild(wordSpan);
+    });
+
+    const statusPill = document.getElementById("v4-read-points-status");
+    statusPill.textContent = "🌟 1 punt te verdienen";
+    statusPill.className = "points-status-pill";
+
+    const feedbackBar = document.getElementById("v4-read-feedback-bar");
+    feedbackBar.textContent = "Lees de zin en tik op het plaatje dat erbij hoort!";
+    feedbackBar.className = "feedback-bar";
+
+    // Kies 3 foute scène-plaatjes met andere scènes
+    const distractors = shuffle(
+      SENTENCES_DATA.filter(
+        s => s.id !== currentSentObj.id && s.scene.join("") !== currentSentObj.scene.join("")
+      )
+    ).slice(0, 3);
+
+    const options = shuffle([currentSentObj, ...distractors]);
+    const grid = document.getElementById("v4-pictures-grid");
+    grid.innerHTML = "";
+
+    options.forEach(opt => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "pic-card";
+      card.style.backgroundColor = opt.bg || "#FFFFFF";
+      card.innerHTML = renderSceneHTML(opt);
+      card.addEventListener("click", () => handleVariant4ReadPick(card, opt, currentSentObj));
+      grid.appendChild(card);
+    });
+  }
+
+  function handleVariant4ReadPick(cardEl, pickedObj, targetObj) {
+    const v4 = state.v4;
+    if (v4.roundFinished || cardEl.classList.contains("faded")) return;
+
+    const feedbackBar = document.getElementById("v4-read-feedback-bar");
+    const statusPill = document.getElementById("v4-read-points-status");
+
+    if (pickedObj.id === targetObj.id) {
+      v4.roundFinished = true;
+      cardEl.classList.add("correct");
+      playSoundSuccess();
+      speakSentence(targetObj);
+
+      document.querySelectorAll("#v4-pictures-grid .pic-card").forEach(el => {
+        if (el !== cardEl) el.classList.add("faded");
+      });
+
+      if (v4.canScoreThisRound) {
+        v4.score += 1;
+        v4.results.push("full");
+        document.getElementById("v4-score-text").textContent = v4.score;
+        feedbackBar.textContent = `Knap gelezen! "${targetObj.sentence}"! +1 punt ⭐`;
+        feedbackBar.className = "feedback-bar good";
+      } else {
+        v4.results.push("lost");
+        feedbackBar.textContent = `Gevonden! "${targetObj.sentence}". Op naar de volgende zin!`;
+        feedbackBar.className = "feedback-bar";
+      }
+
+      renderProgressDots("v4-progress-dots", v4.totalRounds, v4.roundIndex, v4.results);
+
+      setTimeout(() => {
+        v4.roundIndex += 1;
+        if (v4.roundIndex < v4.totalRounds) {
+          loadVariant4Round();
+        } else {
+          showResultsScreen(v4.score, v4.totalRounds, v4.sentences);
+        }
+      }, 1500);
+    } else {
+      cardEl.classList.add("faded");
+      v4.canScoreThisRound = false;
+      playSoundWrong();
+
+      statusPill.textContent = "Geen punt meer deze ronde — probeer het nog eens!";
+      statusPill.className = "points-status-pill points-0";
+
+      feedbackBar.textContent = "Dat plaatje hoort bij een andere zin. Lees nog eens goed!";
+      feedbackBar.className = "feedback-bar warn";
+    }
+  }
+
+  // --- Speelvorm B: Zin bouwen met woordkaartjes (5 rondes, 2 pt/ronde) ---
+  function loadVariant4BuildMode(currentSentObj) {
+    const v4 = state.v4;
+    const picBox = document.getElementById("v4-build-picture-box");
+    picBox.style.backgroundColor = currentSentObj.bg || "#FFFFFF";
+    picBox.innerHTML = renderSceneHTML(currentSentObj);
+
+    v4.targetWords = currentSentObj.sentence.split(" ");
+    v4.slotValues = new Array(v4.targetWords.length).fill(null);
+
+    // Bouw de woordenbank: alle woorden uit de zin + 2 afleiders
+    const tiles = [];
+    v4.targetWords.forEach((w, idx) => {
+      tiles.push({
+        id: `v4-word-main-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+        text: w,
+        used: false
+      });
+    });
+
+    (currentSentObj.distractors || ["op", "de"]).forEach((dw, idx) => {
+      tiles.push({
+        id: `v4-word-dist-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+        text: dw,
+        used: false
+      });
+    });
+
+    v4.bankTiles = shuffle(tiles);
+
+    updateVariant4BuildStatusUI();
+    renderVariant4BuildUI();
+
+    document.getElementById("btn-v4-check").classList.remove("hidden");
+    document.getElementById("btn-v4-next").classList.add("hidden");
+    document.getElementById("btn-v4-clear").classList.remove("hidden");
+
+    const fb = document.getElementById("v4-build-feedback-bar");
+    fb.textContent = "Tik of sleep de woorden in de goede volgorde!";
+    fb.className = "feedback-bar";
+
+    // Spreek de zin bij de start van de ronde rustig uit
+    setTimeout(() => {
+      if (screens.gameV4.classList.contains("active") && v4.mode === "build") {
+        speakSentence(currentSentObj);
+      }
+    }, 250);
+  }
+
+  function updateVariant4BuildStatusUI() {
+    const v4 = state.v4;
+    const badge = document.getElementById("v4-build-points-badge");
+    if (v4.mistakesThisRound === 0) {
+      badge.textContent = "🌟🌟 2 punten waard";
+      badge.className = "points-status-pill points-2";
+    } else if (v4.mistakesThisRound === 1) {
+      badge.textContent = "🌟 Verbeter je foutje voor 1 punt!";
+      badge.className = "points-status-pill points-1";
+    } else {
+      badge.textContent = "0 punten deze ronde";
+      badge.className = "points-status-pill points-0";
+    }
+  }
+
+  function renderVariant4BuildUI() {
+    const v4 = state.v4;
+    const slotsContainer = document.getElementById("v4-sentence-slots");
+    const bankContainer = document.getElementById("v4-word-bank");
+    if (!slotsContainer || !bankContainer) return;
+
+    slotsContainer.innerHTML = "";
+    v4.slotValues.forEach((slotVal, slotIdx) => {
+      const slotEl = document.createElement("div");
+      slotEl.className = "sentence-slot";
+      slotEl.dataset.slotIndex = slotIdx;
+
+      if (slotVal) {
+        slotEl.textContent = slotVal.text;
+        slotEl.classList.add("filled");
+        if (slotVal.locked) {
+          slotEl.classList.add("slot-correct");
+        } else if (!v4.roundFinished) {
+          slotEl.addEventListener("pointerdown", e => {
+            e.preventDefault();
+            startV4PointerDrag(e, {
+              sourceType: "slot",
+              tileId: slotVal.tileId,
+              text: slotVal.text,
+              sourceSlotIndex: slotIdx
+            });
+          });
+        }
+      }
+      slotsContainer.appendChild(slotEl);
+    });
+
+    bankContainer.innerHTML = "";
+    v4.bankTiles.forEach(tile => {
+      const tileEl = document.createElement("div");
+      tileEl.className = "word-tile" + (tile.used ? " used" : "");
+      tileEl.textContent = tile.text;
+      tileEl.dataset.tileId = tile.id;
+
+      if (!tile.used && !v4.roundFinished) {
+        tileEl.addEventListener("pointerdown", e => {
+          e.preventDefault();
+          startV4PointerDrag(e, {
+            sourceType: "bank",
+            tileId: tile.id,
+            text: tile.text,
+            sourceSlotIndex: null
+          });
+        });
+      }
+      bankContainer.appendChild(tileEl);
+    });
+  }
+
+  // --- Touch & Mouse Drag-and-Drop voor Woordkaartjes (Variant 4 Build Mode) ---
+  let v4DragCtx = null;
+
+  function startV4PointerDrag(e, info) {
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const ghost = document.createElement("div");
+    ghost.className = "dragging-word-ghost";
+    ghost.textContent = info.text;
+    ghost.style.left = `${startX}px`;
+    ghost.style.top = `${startY}px`;
+    ghost.style.display = "none";
+    document.body.appendChild(ghost);
+
+    v4DragCtx = {
+      ...info,
+      startX,
+      startY,
+      hasMoved: false,
+      ghost,
+      hoveredSlotIndex: null
+    };
+
+    window.addEventListener("pointermove", onV4PointerMove, { passive: false });
+    window.addEventListener("pointerup", onV4PointerUp);
+    window.addEventListener("pointercancel", onV4PointerUp);
+  }
+
+  function onV4PointerMove(e) {
+    if (!v4DragCtx) return;
+    e.preventDefault();
+    const dx = e.clientX - v4DragCtx.startX;
+    const dy = e.clientY - v4DragCtx.startY;
+
+    if (!v4DragCtx.hasMoved && Math.hypot(dx, dy) > 8) {
+      v4DragCtx.hasMoved = true;
+      v4DragCtx.ghost.style.display = "flex";
+    }
+
+    if (v4DragCtx.hasMoved) {
+      v4DragCtx.ghost.style.left = `${e.clientX}px`;
+      v4DragCtx.ghost.style.top = `${e.clientY}px`;
+
+      const slotEls = document.querySelectorAll("#v4-sentence-slots .sentence-slot");
+      let foundIdx = null;
+      slotEls.forEach(el => {
+        el.classList.remove("highlight-drop");
+        const idx = parseInt(el.dataset.slotIndex, 10);
+        const existing = state.v4.slotValues[idx];
+        if (existing && existing.locked) return;
+
+        const rect = el.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left - 10 &&
+          e.clientX <= rect.right + 10 &&
+          e.clientY >= rect.top - 14 &&
+          e.clientY <= rect.bottom + 14
+        ) {
+          foundIdx = idx;
+        }
+      });
+
+      if (foundIdx !== null) {
+        slotEls[foundIdx].classList.add("highlight-drop");
+      }
+      v4DragCtx.hoveredSlotIndex = foundIdx;
+    }
+  }
+
+  function onV4PointerUp(e) {
+    if (!v4DragCtx) return;
+    window.removeEventListener("pointermove", onV4PointerMove);
+    window.removeEventListener("pointerup", onV4PointerUp);
+    window.removeEventListener("pointercancel", onV4PointerUp);
+
+    const ctx = v4DragCtx;
+    v4DragCtx = null;
+    if (ctx.ghost && ctx.ghost.parentNode) {
+      ctx.ghost.parentNode.removeChild(ctx.ghost);
+    }
+    document.querySelectorAll("#v4-sentence-slots .sentence-slot").forEach(el => {
+      el.classList.remove("highlight-drop");
+    });
+
+    const v4 = state.v4;
+
+    if (!ctx.hasMoved) {
+      if (ctx.sourceType === "bank") {
+        const firstEmptyIdx = v4.slotValues.findIndex(val => val === null);
+        if (firstEmptyIdx !== -1) {
+          placeV4WordInSlot(ctx.tileId, ctx.text, firstEmptyIdx);
+        }
+      } else if (ctx.sourceType === "slot") {
+        removeV4WordFromSlot(ctx.sourceSlotIndex);
+      }
+      return;
+    }
+
+    if (ctx.hoveredSlotIndex !== null) {
+      const targetIdx = ctx.hoveredSlotIndex;
+      if (ctx.sourceType === "bank") {
+        placeV4WordInSlot(ctx.tileId, ctx.text, targetIdx);
+      } else if (ctx.sourceType === "slot") {
+        swapOrMoveV4SlotWord(ctx.sourceSlotIndex, targetIdx);
+      }
+      return;
+    }
+
+    const slotsBox = document.querySelector(".sentence-slots-container");
+    if (ctx.sourceType === "bank" && slotsBox) {
+      const boxRect = slotsBox.getBoundingClientRect();
+      if (
+        e.clientY >= boxRect.top - 25 &&
+        e.clientY <= boxRect.bottom + 25 &&
+        e.clientX >= boxRect.left - 25 &&
+        e.clientX <= boxRect.right + 25
+      ) {
+        const firstEmptyIdx = v4.slotValues.findIndex(val => val === null);
+        if (firstEmptyIdx !== -1) {
+          placeV4WordInSlot(ctx.tileId, ctx.text, firstEmptyIdx);
+          return;
+        }
+      }
+    }
+
+    if (ctx.sourceType === "slot") {
+      removeV4WordFromSlot(ctx.sourceSlotIndex);
+    }
+  }
+
+  function placeV4WordInSlot(tileId, text, slotIdx) {
+    const v4 = state.v4;
+    const existing = v4.slotValues[slotIdx];
+    if (existing && existing.locked) return;
+
+    if (existing) {
+      const oldTile = v4.bankTiles.find(t => t.id === existing.tileId);
+      if (oldTile) oldTile.used = false;
+    }
+
+    const bankTile = v4.bankTiles.find(t => t.id === tileId);
+    if (bankTile) bankTile.used = true;
+
+    v4.slotValues[slotIdx] = { tileId, text, locked: false };
+    playSoundPop();
+    renderVariant4BuildUI();
+  }
+
+  function removeV4WordFromSlot(slotIdx) {
+    const v4 = state.v4;
+    const existing = v4.slotValues[slotIdx];
+    if (!existing || existing.locked) return;
+
+    const bankTile = v4.bankTiles.find(t => t.id === existing.tileId);
+    if (bankTile) bankTile.used = false;
+
+    v4.slotValues[slotIdx] = null;
+    playSoundPop();
+    renderVariant4BuildUI();
+  }
+
+  function swapOrMoveV4SlotWord(fromIdx, toIdx) {
+    if (fromIdx === toIdx) return;
+    const v4 = state.v4;
+    const fromVal = v4.slotValues[fromIdx];
+    const toVal = v4.slotValues[toIdx];
+    if (!fromVal || fromVal.locked || (toVal && toVal.locked)) return;
+
+    v4.slotValues[toIdx] = fromVal;
+    v4.slotValues[fromIdx] = toVal || null;
+    playSoundPop();
+    renderVariant4BuildUI();
+  }
+
+  function checkVariant4Sentence() {
+    const v4 = state.v4;
+    if (v4.roundFinished) return;
+
+    const currentSentObj = v4.sentences[v4.roundIndex];
+    const feedbackBar = document.getElementById("v4-build-feedback-bar");
+
+    const isComplete = v4.slotValues.every(v => v !== null);
+    if (!isComplete) {
+      playSoundWrong();
+      feedbackBar.textContent = "Vul eerst alle woordvakjes in voordat je controleert!";
+      feedbackBar.className = "feedback-bar warn";
+      return;
+    }
+
+    const formedSentence = v4.slotValues.map(v => (v ? v.text : "")).join(" ");
+
+    if (formedSentence === currentSentObj.sentence) {
+      // GOED!
+      v4.roundFinished = true;
+      const earned = v4.mistakesThisRound === 0 ? 2 : 1;
+      v4.score += earned;
+      v4.results.push(earned === 2 ? "full" : "half");
+
+      v4.slotValues.forEach(s => {
+        if (s) s.locked = true;
+      });
+      renderVariant4BuildUI();
+
+      document.getElementById("v4-score-text").textContent = v4.score;
+      renderProgressDots("v4-progress-dots", v4.totalRounds, v4.roundIndex, v4.results);
+
+      playSoundSuccess();
+      speakSentence(currentSentObj);
+
+      feedbackBar.textContent =
+        earned === 2
+          ? `Super! "${currentSentObj.sentence}" in één keer goed! +2 punten 🌟🌟`
+          : `Goed verbeterd! "${currentSentObj.sentence}" klopt nu helemaal! +1 punt 🌟`;
+      feedbackBar.className = "feedback-bar good";
+
+      document.getElementById("btn-v4-check").classList.add("hidden");
+      document.getElementById("btn-v4-clear").classList.add("hidden");
+      document.getElementById("btn-v4-next").classList.remove("hidden");
+      return;
+    }
+
+    // Foutje gemaakt
+    v4.mistakesThisRound += 1;
+    playSoundWrong();
+
+    const slotEls = document.querySelectorAll("#v4-sentence-slots .sentence-slot");
+
+    if (v4.mistakesThisRound === 1) {
+      updateVariant4BuildStatusUI();
+      feedbackBar.textContent =
+        "Bijna goed! De groene woorden staan al goed. Verbeter de rest voor 1 punt!";
+      feedbackBar.className = "feedback-bar warn";
+
+      v4.slotValues.forEach((slotVal, idx) => {
+        if (slotVal && slotVal.text === v4.targetWords[idx]) {
+          slotVal.locked = true;
+          if (slotEls[idx]) slotEls[idx].classList.add("slot-correct");
+        } else if (slotEls[idx]) {
+          slotEls[idx].classList.add("slot-wrong");
+        }
+      });
+
+      setTimeout(() => {
+        v4.slotValues.forEach((slotVal, idx) => {
+          if (slotVal && !slotVal.locked) {
+            const bankTile = v4.bankTiles.find(t => t.id === slotVal.tileId);
+            if (bankTile) bankTile.used = false;
+            v4.slotValues[idx] = null;
+          }
+        });
+        renderVariant4BuildUI();
+      }, 700);
+    } else {
+      // Tweede foutje: toon de juiste zin
+      v4.roundFinished = true;
+      v4.results.push("lost");
+      updateVariant4BuildStatusUI();
+      renderProgressDots("v4-progress-dots", v4.totalRounds, v4.roundIndex, v4.results);
+
+      v4.slotValues = v4.targetWords.map(w => ({
+        tileId: null,
+        text: w,
+        locked: true
+      }));
+      renderVariant4BuildUI();
+
+      speakSentence(currentSentObj);
+      feedbackBar.textContent = `De juiste zin is: "${currentSentObj.sentence}". Lees maar mee!`;
+      feedbackBar.className = "feedback-bar warn";
+
+      document.getElementById("btn-v4-check").classList.add("hidden");
+      document.getElementById("btn-v4-clear").classList.add("hidden");
+      document.getElementById("btn-v4-next").classList.remove("hidden");
+    }
+  }
+
+  function advanceVariant4Round() {
+    const v4 = state.v4;
+    v4.roundIndex += 1;
+    if (v4.roundIndex < v4.totalRounds) {
+      loadVariant4Round();
+    } else {
+      showResultsScreen(v4.score, v4.totalRounds * 2, v4.sentences);
+    }
+  }
+
+  // ==========================================================================
+  // VARIANT 5: ZIN MAKEN MET LOSSE LETTERS (GEGROEPEERD PER WOORD)
+  // ==========================================================================
+  function startVariant5() {
+    state.currentVariant = 5;
+    const v5 = state.v5;
+    v5.roundIndex = 0;
+    v5.score = 0;
+    v5.results = [];
+
+    const chk = document.getElementById("chk-v5-digraphs");
+    if (chk) v5.useDigraphs = chk.checked;
+
+    const pool = shuffle(getFilteredSentences());
+    v5.sentences = pool.slice(0, v5.totalRounds);
+
+    showScreen("gameV5");
+    loadVariant5Round();
+  }
+
+  function shuffleWordUnits(units) {
+    if (units.length <= 1) return [...units];
+    const allSame = units.every(u => u === units[0]);
+    if (allSame) return [...units];
+
+    let arr = shuffle(units);
+    let attempts = 0;
+    while (arr.join("|") === units.join("|") && attempts < 8) {
+      arr = shuffle(units);
+      attempts += 1;
+    }
+    return arr;
+  }
+
+  function buildVariant5WordGroups(sentObj) {
+    const v5 = state.v5;
+    const words = sentObj.sentence.split(" ");
+
+    const vowelPool = v5.useDigraphs
+      ? ["a", "e", "i", "o", "u", "aa", "ee", "oo", "oe", "ui", "eu", "ie", "ij"]
+      : ["a", "e", "i", "o", "u"];
+    const consonantPool = v5.useDigraphs
+      ? ["r", "n", "m", "s", "p", "t", "k", "b", "d", "l", "v", "z", "h", "w", "g", "j", "ng", "nk", "ch"]
+      : ["r", "n", "m", "s", "p", "t", "k", "b", "d", "l", "v", "z", "h", "w", "g", "j"];
+
+    v5.wordGroups = words.map((wordText, wIdx) => {
+      const targetUnits = splitWordIntoUnits(wordText, v5.useDigraphs);
+      const presentSet = new Set(targetUnits);
+
+      // Voeg per woord fop-letters toe (3 bij korte woorden van 1-2 blokjes, 2 bij langere woorden)
+      // zodat een kind niet alleen de volgorde kan gokken maar echt de klanken moet lezen.
+      const extraCount = targetUnits.length <= 2 ? 3 : 2;
+      const distractors = [];
+
+      // Kies 1 fop-klinker/tweetekenklank die niet in het woord zit
+      const availVowels = shuffle(vowelPool.filter(v => !presentSet.has(v)));
+      if (availVowels.length > 0) {
+        distractors.push(availVowels[0]);
+        presentSet.add(availVowels[0]);
+      }
+
+      // Vul aan met fop-medeklinkers die niet in het woord zitten
+      const availConsonants = shuffle(consonantPool.filter(c => !presentSet.has(c)));
+      for (const c of availConsonants) {
+        if (distractors.length >= extraCount) break;
+        distractors.push(c);
+        presentSet.add(c);
+      }
+
+      const allUnits = [...targetUnits, ...distractors];
+      const shuffledTexts = shuffleWordUnits(allUnits);
+
+      const bankTiles = shuffledTexts.map((text, idx) => ({
+        id: `v5-tile-${wIdx}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+        text,
+        used: false
+      }));
+
+      return {
+        wordIndex: wIdx,
+        wordText,
+        targetUnits,
+        slotValues: new Array(targetUnits.length).fill(null),
+        bankTiles
+      };
+    });
+  }
+
+  function loadVariant5Round() {
+    const v5 = state.v5;
+    const currentSentObj = v5.sentences[v5.roundIndex];
+    v5.mistakesThisRound = 0;
+    v5.roundFinished = false;
+
+    document.getElementById("v5-round-text").textContent = `${v5.roundIndex + 1} / ${v5.totalRounds}`;
+    document.getElementById("v5-score-text").textContent = v5.score;
+    renderProgressDots("v5-progress-dots", v5.totalRounds, v5.roundIndex, v5.results);
+
+    const picBox = document.getElementById("v5-picture-box");
+    picBox.style.backgroundColor = currentSentObj.bg || "#FFFFFF";
+    picBox.innerHTML = renderSceneHTML(currentSentObj);
+
+    buildVariant5WordGroups(currentSentObj);
+    updateVariant5StatusUI();
+    renderVariant5UI();
+
+    document.getElementById("btn-v5-check").classList.remove("hidden");
+    document.getElementById("btn-v5-clear").classList.remove("hidden");
+    document.getElementById("btn-v5-next").classList.add("hidden");
+
+    const fb = document.getElementById("v5-feedback-bar");
+    fb.textContent = "Kies bij elk woord de juiste letters — pas op voor de extra fop-letters!";
+    fb.className = "feedback-bar";
+
+    setTimeout(() => {
+      if (screens.gameV5.classList.contains("active")) {
+        speakSentence(currentSentObj);
+      }
+    }, 250);
+  }
+
+  function updateVariant5StatusUI() {
+    const v5 = state.v5;
+    const badge = document.getElementById("v5-points-badge");
+    if (v5.mistakesThisRound === 0) {
+      badge.textContent = "🌟🌟 2 punten waard";
+      badge.className = "points-status-pill points-2";
+    } else if (v5.mistakesThisRound === 1) {
+      badge.textContent = "🌟 Verbeter de foutjes voor 1 punt!";
+      badge.className = "points-status-pill points-1";
+    } else {
+      badge.textContent = "0 punten deze ronde";
+      badge.className = "points-status-pill points-0";
+    }
+  }
+
+  function renderVariant5UI() {
+    const v5 = state.v5;
+    const container = document.getElementById("v5-word-groups");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    v5.wordGroups.forEach((group, wIdx) => {
+      const allFilled = group.slotValues.every(s => s !== null);
+      const allLocked = group.slotValues.every(s => s && s.locked);
+
+      const card = document.createElement("div");
+      card.className =
+        "v5-word-group-card" +
+        (allLocked ? " word-locked" : allFilled ? " word-filled" : "");
+      card.dataset.wordIndex = wIdx;
+
+      const label = document.createElement("div");
+      label.className = "v5-group-label";
+      label.textContent = `Woord ${wIdx + 1}`;
+      card.appendChild(label);
+
+      // Bovenste rij: Doelvakjes voor dit woord
+      const slotsRow = document.createElement("div");
+      slotsRow.className = "v5-group-slots";
+
+      group.slotValues.forEach((slotVal, sIdx) => {
+        const slotEl = document.createElement("div");
+        slotEl.className = "letter-slot";
+        slotEl.dataset.wordIndex = wIdx;
+        slotEl.dataset.slotIndex = sIdx;
+
+        if (slotVal) {
+          slotEl.textContent = slotVal.text;
+          slotEl.classList.add("filled");
+          if (slotVal.locked) {
+            slotEl.classList.add("slot-correct");
+          } else if (!v5.roundFinished) {
+            slotEl.addEventListener("pointerdown", e => {
+              e.preventDefault();
+              startV5PointerDrag(e, {
+                sourceType: "slot",
+                wordIndex: wIdx,
+                tileId: slotVal.tileId,
+                text: slotVal.text,
+                sourceSlotIndex: sIdx
+              });
+            });
+          }
+        }
+        slotsRow.appendChild(slotEl);
+      });
+      card.appendChild(slotsRow);
+
+      // Onderste rij: Geschudde letters die bij dit woord horen
+      const bankRow = document.createElement("div");
+      bankRow.className = "v5-group-bank";
+
+      group.bankTiles.forEach(tile => {
+        const tileEl = document.createElement("div");
+        tileEl.className = "letter-tile" + (tile.used ? " used" : "");
+        tileEl.textContent = tile.text;
+        tileEl.dataset.tileId = tile.id;
+        tileEl.dataset.wordIndex = wIdx;
+
+        if (!tile.used && !v5.roundFinished) {
+          tileEl.addEventListener("pointerdown", e => {
+            e.preventDefault();
+            startV5PointerDrag(e, {
+              sourceType: "bank",
+              wordIndex: wIdx,
+              tileId: tile.id,
+              text: tile.text,
+              sourceSlotIndex: null
+            });
+          });
+        }
+        bankRow.appendChild(tileEl);
+      });
+      card.appendChild(bankRow);
+
+      container.appendChild(card);
+    });
+  }
+
+  // --- Touch & Mouse Drag-and-Drop per woord-groep (Variant 5) ---
+  let v5DragCtx = null;
+
+  function startV5PointerDrag(e, info) {
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const ghost = document.createElement("div");
+    ghost.className = "dragging-ghost";
+    ghost.textContent = info.text;
+    ghost.style.left = `${startX}px`;
+    ghost.style.top = `${startY}px`;
+    ghost.style.display = "none";
+    document.body.appendChild(ghost);
+
+    v5DragCtx = {
+      ...info,
+      startX,
+      startY,
+      hasMoved: false,
+      ghost,
+      hoveredSlotIndex: null
+    };
+
+    window.addEventListener("pointermove", onV5PointerMove, { passive: false });
+    window.addEventListener("pointerup", onV5PointerUp);
+    window.addEventListener("pointercancel", onV5PointerUp);
+  }
+
+  function onV5PointerMove(e) {
+    if (!v5DragCtx) return;
+    e.preventDefault();
+    const dx = e.clientX - v5DragCtx.startX;
+    const dy = e.clientY - v5DragCtx.startY;
+
+    if (!v5DragCtx.hasMoved && Math.hypot(dx, dy) > 8) {
+      v5DragCtx.hasMoved = true;
+      v5DragCtx.ghost.style.display = "flex";
+    }
+
+    if (v5DragCtx.hasMoved) {
+      v5DragCtx.ghost.style.left = `${e.clientX}px`;
+      v5DragCtx.ghost.style.top = `${e.clientY}px`;
+
+      const wIdx = v5DragCtx.wordIndex;
+      const group = state.v5.wordGroups[wIdx];
+      const slotEls = document.querySelectorAll(
+        `#v5-word-groups .v5-word-group-card[data-word-index="${wIdx}"] .letter-slot`
+      );
+      let foundIdx = null;
+      slotEls.forEach(el => {
+        el.classList.remove("highlight-drop");
+        const idx = parseInt(el.dataset.slotIndex, 10);
+        const existing = group.slotValues[idx];
+        if (existing && existing.locked) return;
+
+        const rect = el.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left - 8 &&
+          e.clientX <= rect.right + 8 &&
+          e.clientY >= rect.top - 12 &&
+          e.clientY <= rect.bottom + 12
+        ) {
+          foundIdx = idx;
+        }
+      });
+
+      if (foundIdx !== null && slotEls[foundIdx]) {
+        slotEls[foundIdx].classList.add("highlight-drop");
+      }
+      v5DragCtx.hoveredSlotIndex = foundIdx;
+    }
+  }
+
+  function onV5PointerUp(e) {
+    if (!v5DragCtx) return;
+    window.removeEventListener("pointermove", onV5PointerMove);
+    window.removeEventListener("pointerup", onV5PointerUp);
+    window.removeEventListener("pointercancel", onV5PointerUp);
+
+    const ctx = v5DragCtx;
+    v5DragCtx = null;
+    if (ctx.ghost && ctx.ghost.parentNode) {
+      ctx.ghost.parentNode.removeChild(ctx.ghost);
+    }
+    document.querySelectorAll("#v5-word-groups .letter-slot").forEach(el => {
+      el.classList.remove("highlight-drop");
+    });
+
+    const group = state.v5.wordGroups[ctx.wordIndex];
+    if (!group) return;
+
+    if (!ctx.hasMoved) {
+      if (ctx.sourceType === "bank") {
+        const firstEmptyIdx = group.slotValues.findIndex(val => val === null);
+        if (firstEmptyIdx !== -1) {
+          placeV5TileInSlot(ctx.wordIndex, ctx.tileId, ctx.text, firstEmptyIdx);
+        }
+      } else if (ctx.sourceType === "slot") {
+        removeV5TileFromSlot(ctx.wordIndex, ctx.sourceSlotIndex);
+      }
+      return;
+    }
+
+    if (ctx.hoveredSlotIndex !== null) {
+      const targetIdx = ctx.hoveredSlotIndex;
+      if (ctx.sourceType === "bank") {
+        placeV5TileInSlot(ctx.wordIndex, ctx.tileId, ctx.text, targetIdx);
+      } else if (ctx.sourceType === "slot") {
+        swapOrMoveV5SlotTile(ctx.wordIndex, ctx.sourceSlotIndex, targetIdx);
+      }
+      return;
+    }
+
+    // Als gesleept binnen de woord-kaart, plaats in eerste lege vakje van dat woord
+    const groupCard = document.querySelector(
+      `#v5-word-groups .v5-word-group-card[data-word-index="${ctx.wordIndex}"]`
+    );
+    if (ctx.sourceType === "bank" && groupCard) {
+      const boxRect = groupCard.getBoundingClientRect();
+      if (
+        e.clientY >= boxRect.top - 20 &&
+        e.clientY <= boxRect.bottom + 20 &&
+        e.clientX >= boxRect.left - 20 &&
+        e.clientX <= boxRect.right + 20
+      ) {
+        const firstEmptyIdx = group.slotValues.findIndex(val => val === null);
+        if (firstEmptyIdx !== -1) {
+          placeV5TileInSlot(ctx.wordIndex, ctx.tileId, ctx.text, firstEmptyIdx);
+          return;
+        }
+      }
+    }
+
+    if (ctx.sourceType === "slot") {
+      removeV5TileFromSlot(ctx.wordIndex, ctx.sourceSlotIndex);
+    }
+  }
+
+  function placeV5TileInSlot(wordIdx, tileId, text, slotIdx) {
+    const group = state.v5.wordGroups[wordIdx];
+    if (!group) return;
+    const existing = group.slotValues[slotIdx];
+    if (existing && existing.locked) return;
+
+    if (existing) {
+      const oldTile = group.bankTiles.find(t => t.id === existing.tileId);
+      if (oldTile) oldTile.used = false;
+    }
+
+    const bankTile = group.bankTiles.find(t => t.id === tileId);
+    if (bankTile) bankTile.used = true;
+
+    group.slotValues[slotIdx] = { tileId, text, locked: false };
+    playSoundPop();
+    renderVariant5UI();
+  }
+
+  function removeV5TileFromSlot(wordIdx, slotIdx) {
+    const group = state.v5.wordGroups[wordIdx];
+    if (!group) return;
+    const existing = group.slotValues[slotIdx];
+    if (!existing || existing.locked) return;
+
+    const bankTile = group.bankTiles.find(t => t.id === existing.tileId);
+    if (bankTile) bankTile.used = false;
+
+    group.slotValues[slotIdx] = null;
+    playSoundPop();
+    renderVariant5UI();
+  }
+
+  function swapOrMoveV5SlotTile(wordIdx, fromIdx, toIdx) {
+    if (fromIdx === toIdx) return;
+    const group = state.v5.wordGroups[wordIdx];
+    if (!group) return;
+    const fromVal = group.slotValues[fromIdx];
+    const toVal = group.slotValues[toIdx];
+    if (!fromVal || fromVal.locked || (toVal && toVal.locked)) return;
+
+    group.slotValues[toIdx] = fromVal;
+    group.slotValues[fromIdx] = toVal || null;
+    playSoundPop();
+    renderVariant5UI();
+  }
+
+  function checkVariant5Sentence() {
+    const v5 = state.v5;
+    if (v5.roundFinished) return;
+
+    const currentSentObj = v5.sentences[v5.roundIndex];
+    const feedbackBar = document.getElementById("v5-feedback-bar");
+
+    const allFilled = v5.wordGroups.every(g => g.slotValues.every(s => s !== null));
+    if (!allFilled) {
+      playSoundWrong();
+      feedbackBar.textContent = "Maak eerst alle woorden van de zin helemaal af!";
+      feedbackBar.className = "feedback-bar warn";
+      return;
+    }
+
+    const allCorrect = v5.wordGroups.every(
+      g => g.slotValues.map(s => (s ? s.text : "")).join("") === g.wordText
+    );
+
+    if (allCorrect) {
+      v5.roundFinished = true;
+      const earned = v5.mistakesThisRound === 0 ? 2 : 1;
+      v5.score += earned;
+      v5.results.push(earned === 2 ? "full" : "half");
+
+      v5.wordGroups.forEach(g => {
+        g.slotValues.forEach(s => {
+          if (s) s.locked = true;
+        });
+      });
+      renderVariant5UI();
+
+      document.getElementById("v5-score-text").textContent = v5.score;
+      renderProgressDots("v5-progress-dots", v5.totalRounds, v5.roundIndex, v5.results);
+
+      playSoundSuccess();
+      speakSentence(currentSentObj);
+
+      feedbackBar.textContent =
+        earned === 2
+          ? `Fantastisch! Elk woord van "${currentSentObj.sentence}" in één keer goed! +2 punten 🌟🌟`
+          : `Knap verbeterd! De hele zin "${currentSentObj.sentence}" staat nu goed! +1 punt 🌟`;
+      feedbackBar.className = "feedback-bar good";
+
+      document.getElementById("btn-v5-check").classList.add("hidden");
+      document.getElementById("btn-v5-clear").classList.add("hidden");
+      document.getElementById("btn-v5-next").classList.remove("hidden");
+      return;
+    }
+
+    // Er zit nog een foutje in een of meer woorden
+    v5.mistakesThisRound += 1;
+    playSoundWrong();
+
+    if (v5.mistakesThisRound === 1) {
+      updateVariant5StatusUI();
+      feedbackBar.textContent =
+        "Bijna! De groene letters staan al op de goede plek. Verbeter de andere letters voor 1 punt!";
+      feedbackBar.className = "feedback-bar warn";
+
+      v5.wordGroups.forEach((group, wIdx) => {
+        const slotEls = document.querySelectorAll(
+          `#v5-word-groups .v5-word-group-card[data-word-index="${wIdx}"] .letter-slot`
+        );
+        group.slotValues.forEach((slotVal, sIdx) => {
+          if (slotVal && slotVal.text === group.targetUnits[sIdx]) {
+            slotVal.locked = true;
+            if (slotEls[sIdx]) slotEls[sIdx].classList.add("slot-correct");
+          } else if (slotEls[sIdx]) {
+            slotEls[sIdx].classList.add("slot-wrong");
+          }
+        });
+      });
+
+      setTimeout(() => {
+        v5.wordGroups.forEach(group => {
+          group.slotValues.forEach((slotVal, sIdx) => {
+            if (slotVal && !slotVal.locked) {
+              const tile = group.bankTiles.find(t => t.id === slotVal.tileId);
+              if (tile) tile.used = false;
+              group.slotValues[sIdx] = null;
+            }
+          });
+        });
+        renderVariant5UI();
+      }, 700);
+    } else {
+      // Tweede foutje: toon alle woorden op de juiste manier
+      v5.roundFinished = true;
+      v5.results.push("lost");
+      updateVariant5StatusUI();
+      renderProgressDots("v5-progress-dots", v5.totalRounds, v5.roundIndex, v5.results);
+
+      v5.wordGroups.forEach(group => {
+        group.slotValues = group.targetUnits.map(u => ({
+          tileId: null,
+          text: u,
+          locked: true
+        }));
+        group.bankTiles.forEach(t => {
+          t.used = true;
+        });
+      });
+      renderVariant5UI();
+
+      speakSentence(currentSentObj);
+      feedbackBar.textContent = `De juiste zin is: "${currentSentObj.sentence}". Kijk maar goed naar de woorden!`;
+      feedbackBar.className = "feedback-bar warn";
+
+      document.getElementById("btn-v5-check").classList.add("hidden");
+      document.getElementById("btn-v5-clear").classList.add("hidden");
+      document.getElementById("btn-v5-next").classList.remove("hidden");
+    }
+  }
+
+  function advanceVariant5Round() {
+    const v5 = state.v5;
+    v5.roundIndex += 1;
+    if (v5.roundIndex < v5.totalRounds) {
+      loadVariant5Round();
+    } else {
+      showResultsScreen(v5.score, v5.totalRounds * 2, v5.sentences);
+    }
+  }
+
+  // ==========================================================================
+  // EINDSCHERM & CONFETTI (Variant 1, 2 & 4)
+  // ==========================================================================
+  function showResultsScreen(score, maxScore, practicedItems) {
     showScreen("result");
     playSoundFanfare();
 
@@ -1984,7 +3130,7 @@
     } else if (ratio >= 0.7) {
       trophyEl.textContent = "🎉";
       titleEl.textContent = "Super knap gedaan!";
-      subEl.textContent = "Je hebt al heel veel woordjes goed gelezen!";
+      subEl.textContent = "Je hebt al heel goed gelezen!";
       starsEl.textContent = "⭐⭐⭐⭐";
       startConfetti();
     } else if (ratio >= 0.4) {
@@ -2001,12 +3147,17 @@
 
     const wordsListEl = document.getElementById("result-words-list");
     wordsListEl.innerHTML = "";
-    practicedWords.forEach(w => {
+    practicedItems.forEach(item => {
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "word-chip";
-      chip.innerHTML = `<span>${w.emoji.trim()}</span> <span>${w.word}</span>`;
-      chip.addEventListener("click", () => speakText(w.word));
+      if (item.sentence) {
+        chip.innerHTML = `<span>${(item.scene || ["📖"]).join("")}</span> <span>${item.sentence}</span>`;
+        chip.addEventListener("click", () => speakSentence(item));
+      } else {
+        chip.innerHTML = `<span>${item.emoji.trim()}</span> <span>${item.word}</span>`;
+        chip.addEventListener("click", () => speakText(item.word));
+      }
       wordsListEl.appendChild(chip);
     });
   }
@@ -2241,6 +3392,174 @@
       advanceVariant2Round();
     });
 
+    // --- Variant 4 (Korte Lijn 3 Zinnen) Setup & Knoppen ---
+    const openV4Btn = document.getElementById("btn-open-v4-options");
+    if (openV4Btn) {
+      openV4Btn.addEventListener("click", () => {
+        playSoundPop();
+        showScreen("v4Setup");
+      });
+    }
+
+    const v4ModeReadBtn = document.getElementById("btn-v4-mode-read");
+    const v4ModeBuildBtn = document.getElementById("btn-v4-mode-build");
+
+    if (v4ModeReadBtn && v4ModeBuildBtn) {
+      v4ModeReadBtn.addEventListener("click", () => {
+        state.v4.mode = "read";
+        v4ModeReadBtn.classList.add("selected");
+        v4ModeBuildBtn.classList.remove("selected");
+        playSoundPop();
+      });
+
+      v4ModeBuildBtn.addEventListener("click", () => {
+        state.v4.mode = "build";
+        v4ModeBuildBtn.classList.add("selected");
+        v4ModeReadBtn.classList.remove("selected");
+        playSoundPop();
+      });
+    }
+
+    const v4BackBtn = document.getElementById("btn-v4-back-to-menu");
+    if (v4BackBtn) {
+      v4BackBtn.addEventListener("click", () => {
+        showScreen("menu");
+      });
+    }
+
+    const startV4Btn = document.getElementById("btn-start-v4");
+    if (startV4Btn) {
+      startV4Btn.addEventListener("click", () => {
+        playSoundPop();
+        startVariant4();
+      });
+    }
+
+    const v4ReadSpeakBtn = document.getElementById("btn-v4-read-speak");
+    if (v4ReadSpeakBtn) {
+      v4ReadSpeakBtn.addEventListener("click", () => {
+        const sentObj = state.v4.sentences[state.v4.roundIndex];
+        if (sentObj) speakSentence(sentObj);
+      });
+    }
+
+    const v4BuildSpeakBtn = document.getElementById("btn-v4-build-speak");
+    if (v4BuildSpeakBtn) {
+      v4BuildSpeakBtn.addEventListener("click", () => {
+        const sentObj = state.v4.sentences[state.v4.roundIndex];
+        if (sentObj) speakSentence(sentObj);
+      });
+    }
+
+    const v4BuildPicBox = document.getElementById("v4-build-picture-box");
+    if (v4BuildPicBox) {
+      v4BuildPicBox.addEventListener("click", () => {
+        const sentObj = state.v4.sentences[state.v4.roundIndex];
+        if (sentObj) speakSentence(sentObj);
+      });
+    }
+
+    const v4ClearBtn = document.getElementById("btn-v4-clear");
+    if (v4ClearBtn) {
+      v4ClearBtn.addEventListener("click", () => {
+        const v4 = state.v4;
+        if (v4.roundFinished) return;
+        v4.slotValues.forEach((slotVal, idx) => {
+          if (slotVal && !slotVal.locked) {
+            const tile = v4.bankTiles.find(t => t.id === slotVal.tileId);
+            if (tile) tile.used = false;
+            v4.slotValues[idx] = null;
+          }
+        });
+        renderVariant4BuildUI();
+        playSoundPop();
+      });
+    }
+
+    const v4CheckBtn = document.getElementById("btn-v4-check");
+    if (v4CheckBtn) {
+      v4CheckBtn.addEventListener("click", () => {
+        checkVariant4Sentence();
+      });
+    }
+
+    const v4NextBtn = document.getElementById("btn-v4-next");
+    if (v4NextBtn) {
+      v4NextBtn.addEventListener("click", () => {
+        advanceVariant4Round();
+      });
+    }
+
+    // --- Variant 5 (Zin maken met losse letters per woord) Knoppen ---
+    const startV5Btn = document.getElementById("btn-start-v5");
+    if (startV5Btn) {
+      startV5Btn.addEventListener("click", () => {
+        playSoundPop();
+        startVariant5();
+      });
+    }
+
+    const v5SpeakBtn = document.getElementById("btn-v5-speak");
+    if (v5SpeakBtn) {
+      v5SpeakBtn.addEventListener("click", () => {
+        const sentObj = state.v5.sentences[state.v5.roundIndex];
+        if (sentObj) speakSentence(sentObj);
+      });
+    }
+
+    const v5PicBox = document.getElementById("v5-picture-box");
+    if (v5PicBox) {
+      v5PicBox.addEventListener("click", () => {
+        const sentObj = state.v5.sentences[state.v5.roundIndex];
+        if (sentObj) speakSentence(sentObj);
+      });
+    }
+
+    const v5DigraphsChk = document.getElementById("chk-v5-digraphs");
+    if (v5DigraphsChk) {
+      v5DigraphsChk.addEventListener("change", e => {
+        const v5 = state.v5;
+        v5.useDigraphs = e.target.checked;
+        if (!v5.roundFinished && v5.sentences[v5.roundIndex]) {
+          buildVariant5WordGroups(v5.sentences[v5.roundIndex]);
+          renderVariant5UI();
+        }
+      });
+    }
+
+    const v5ClearBtn = document.getElementById("btn-v5-clear");
+    if (v5ClearBtn) {
+      v5ClearBtn.addEventListener("click", () => {
+        const v5 = state.v5;
+        if (v5.roundFinished) return;
+        v5.wordGroups.forEach(group => {
+          group.slotValues.forEach((slotVal, sIdx) => {
+            if (slotVal && !slotVal.locked) {
+              const tile = group.bankTiles.find(t => t.id === slotVal.tileId);
+              if (tile) tile.used = false;
+              group.slotValues[sIdx] = null;
+            }
+          });
+        });
+        renderVariant5UI();
+        playSoundPop();
+      });
+    }
+
+    const v5CheckBtn = document.getElementById("btn-v5-check");
+    if (v5CheckBtn) {
+      v5CheckBtn.addEventListener("click", () => {
+        checkVariant5Sentence();
+      });
+    }
+
+    const v5NextBtn = document.getElementById("btn-v5-next");
+    if (v5NextBtn) {
+      v5NextBtn.addEventListener("click", () => {
+        advanceVariant5Round();
+      });
+    }
+
     // Fysiek toetsenbord ondersteuning bij Variant 2 ('type' modus)
     window.addEventListener("keydown", e => {
       if (!screens.gameV2.classList.contains("active") || state.v2.mode !== "type") return;
@@ -2269,8 +3588,12 @@
         startVariant1();
       } else if (state.currentVariant === 2) {
         startVariant2();
-      } else {
+      } else if (state.currentVariant === 3) {
         startVariant3();
+      } else if (state.currentVariant === 4) {
+        startVariant4();
+      } else {
+        startVariant5();
       }
     });
 

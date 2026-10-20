@@ -111,7 +111,7 @@
 
         <!-- Variant 3: Space Mining -->
         <div class="game-card variant-3-card">
-          <div class="card-badge">Spel 3 • Nieuw! 🚀 Ruimte-Missie</div>
+          <div class="card-badge">Spel 3 • 🚀 Ruimte-Missie</div>
           <div class="card-preview preview-space">
             <span class="preview-pics">☄️🐱</span>
             <span class="preview-arrow">⚡</span>
@@ -124,8 +124,74 @@
             🚀 Start Ruimte-Spel
           </button>
         </div>
+
+        <!-- Variant 4: Korte Zinnen (Lijn 3) -->
+        <div class="game-card variant-4-card">
+          <div class="card-badge">Spel 4 • 📖 Korte Zinnen</div>
+          <div class="card-preview preview-sentence">
+            <span class="preview-pics">🏃🏡</span>
+            <span class="preview-arrow">👉</span>
+            <span class="preview-word-chips"><span>ik</span><span>ren</span><span>naar</span><span>huis</span></span>
+          </div>
+          <h3>Korte zinnen lezen &amp; bouwen</h3>
+          <p>Oefen korte Lijn 3 zinnen zoals <em>"ik ren naar huis"</em>! Lees de zin en kies het plaatje, of zet zelf de woorden in de goede volgorde.</p>
+          <button id="btn-open-v4-options" class="primary-btn btn-purple">
+            📖 Speel Spel 4 (Zinnen)
+          </button>
+        </div>
+
+        <!-- Variant 5: Zin maken met losse letters per woord (Gevorderd) -->
+        <div class="game-card variant-5-card">
+          <div class="card-badge">Spel 5 • Nieuw! 👑 Alles-in-één (Gevorderd)</div>
+          <div class="card-preview preview-v5">
+            <span class="preview-pics">🏃🏡</span>
+            <span class="preview-arrow">👉</span>
+            <div class="preview-v5-groups">
+              <span class="preview-v5-group"><em>i</em><em>k</em></span>
+              <span class="preview-v5-group"><em>r</em><em>e</em><em>n</em></span>
+              <span class="preview-v5-group"><em>n</em><em>aa</em><em>r</em></span>
+              <span class="preview-v5-group"><em>h</em><em>ui</em><em>s</em></span>
+            </div>
+          </div>
+          <h3>Zin bouwen met losse letters (per woord)</h3>
+          <p>De ultieme oefening voor gevorderde kinderen! Maak de hele zin door van elk woord zelf de letters op de juiste volgorde te zetten.</p>
+          <button id="btn-start-v5" class="primary-btn btn-gold">
+            👑 Speel Spel 5 (Zin Spellen)
+          </button>
+        </div>
       </section>
     </main>
+
+    <!-- SCHERM 2B: KEUZEMENU VOOR VARIANT 4 (Zin lezen vs Zin bouwen) -->
+    <section id="screen-v4-setup" class="screen">
+      <div class="setup-card">
+        <h2>Hoe wil je de zinnen oefenen?</h2>
+        <p class="setup-subtitle">Kies hoe je Spel 4 wilt spelen volgens Lijn 3:</p>
+
+        <div class="mode-choices">
+          <button id="btn-v4-mode-read" class="mode-choice-btn selected" data-mode="read">
+            <div class="mode-icon">📖🖼️</div>
+            <div class="mode-info">
+              <strong>Zin lezen &amp; plaatje kiezen (10 rondes)</strong>
+              <span>Lees zelf de korte Lijn 3 zin en tik op het plaatje dat bij de zin hoort!</span>
+            </div>
+          </button>
+
+          <button id="btn-v4-mode-build" class="mode-choice-btn" data-mode="build">
+            <div class="mode-icon">🧩🗣️</div>
+            <div class="mode-info">
+              <strong>Zin bouwen met woordkaartjes (5 rondes)</strong>
+              <span>Kijk naar het plaatje, luister naar de zin en sleep of tik de woorden in de juiste volgorde!</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="setup-actions">
+          <button id="btn-v4-back-to-menu" class="secondary-btn">⬅️ Terug</button>
+          <button id="btn-start-v4" class="primary-btn btn-purple large-start-btn">📖 Start Spel 4!</button>
+        </div>
+      </div>
+    </section>
 
     <!-- SCHERM 2: KEUZEMENU VOOR VARIANT 2 (Slepen vs Typen) -->
     <section id="screen-v2-setup" class="screen">
@@ -412,6 +478,153 @@
               <!-- Verlichte dashboard-lettertoetsen -->
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHERM 4C: SPEL VARIANT 4 (Korte Lijn 3 Zinnen: Lezen & Bouwen) -->
+    <section id="screen-game-v4" class="screen">
+      <div class="game-hud">
+        <div class="hud-item">
+          <span class="hud-label">Ronde</span>
+          <span id="v4-round-text" class="hud-value">1 / 10</span>
+        </div>
+        <div class="progress-dots" id="v4-progress-dots"></div>
+        <div class="hud-item score-hud">
+          <span class="hud-label">Punten</span>
+          <span class="hud-value">⭐ <span id="v4-score-text">0</span></span>
+        </div>
+      </div>
+
+      <!-- SPEELVORM A: ZIN LEZEN & PLAATJE KIEZEN -->
+      <div id="v4-read-area" class="v1-play-area">
+        <div class="word-prompt-card sentence-prompt-card">
+          <span class="prompt-instruction">Lees de zin en tik op het goede plaatje:</span>
+          <div class="sentence-display-row">
+            <div id="v4-target-sentence" class="target-sentence">
+              <!-- De te lezen zin -->
+            </div>
+          </div>
+          <div id="v4-read-points-status" class="points-status-pill">
+            🌟 1 punt te verdienen
+          </div>
+        </div>
+
+        <div id="v4-pictures-grid" class="pictures-grid sentence-pictures-grid">
+          <!-- 4 scène-plaatjes -->
+        </div>
+
+        <div id="v4-read-feedback-bar" class="feedback-bar" aria-live="polite"></div>
+      </div>
+
+      <!-- SPEELVORM B: ZIN BOUWEN MET WOORDKAARTJES -->
+      <div id="v4-build-area" class="v2-play-area hidden">
+        <div class="v2-top-row">
+          <div class="v2-picture-showcase">
+            <div id="v4-build-picture-box" class="v2-picture-box sentence-scene-box"></div>
+            <button id="btn-v4-build-speak" class="speak-word-btn" type="button" title="Luister naar de zin">
+              🔊 <span>Hoor de zin</span>
+            </button>
+          </div>
+
+          <div class="v2-status-panel">
+            <div id="v4-build-points-badge" class="points-status-pill points-2">
+              🌟🌟 2 punten waard
+            </div>
+            <p class="v2-instruction">
+              Zet de woordjes in de goede volgorde om de zin te maken!
+            </p>
+            <div id="v4-build-feedback-bar" class="feedback-bar" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- Zinsbalk met de lege woord-vakjes -->
+        <div class="word-slots-container sentence-slots-container">
+          <div id="v4-sentence-slots" class="word-slots sentence-slots">
+            <!-- Vakjes voor de woorden van de zin -->
+          </div>
+          <button id="btn-v4-clear" class="clear-slots-btn" type="button" title="Maak zin leeg">
+            🔄 Wissen
+          </button>
+        </div>
+
+        <!-- Woordenbank met sleepbare/tikbare woordkaartjes -->
+        <div class="letter-bank-wrapper">
+          <div id="v4-word-bank" class="letter-bank sentence-word-bank">
+            <!-- Woordkaartjes van de zin + afleiders -->
+          </div>
+        </div>
+
+        <!-- Controleer / Volgende knoppen -->
+        <div class="v2-action-row">
+          <button id="btn-v4-check" class="primary-btn btn-green check-btn" type="button">
+            ✅ Controleer zin
+          </button>
+          <button id="btn-v4-next" class="primary-btn btn-blue check-btn hidden" type="button">
+            ➡️ Volgende zin
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHERM 4D: SPEL VARIANT 5 (Zin maken met losse letters gegroepeerd per woord) -->
+    <section id="screen-game-v5" class="screen">
+      <div class="game-hud">
+        <div class="hud-item">
+          <span class="hud-label">Ronde</span>
+          <span id="v5-round-text" class="hud-value">1 / 5</span>
+        </div>
+        <div class="progress-dots" id="v5-progress-dots"></div>
+        <div class="hud-item score-hud">
+          <span class="hud-label">Punten</span>
+          <span class="hud-value">⭐ <span id="v5-score-text">0</span></span>
+        </div>
+      </div>
+
+      <div class="v2-play-area v5-play-area">
+        <div class="v2-top-row">
+          <div class="v2-picture-showcase">
+            <div id="v5-picture-box" class="v2-picture-box sentence-scene-box"></div>
+            <button id="btn-v5-speak" class="speak-word-btn" type="button" title="Luister naar de zin">
+              🔊 <span>Hoor de zin</span>
+            </button>
+          </div>
+
+          <div class="v2-status-panel">
+            <div class="v5-status-top-row">
+              <div id="v5-points-badge" class="points-status-pill points-2">
+                🌟🌟 2 punten waard
+              </div>
+              <label class="v5-digraph-toggle">
+                <input type="checkbox" id="chk-v5-digraphs" checked />
+                <span>Lijn 3 klankblokjes (aa, oe, ij...)</span>
+              </label>
+            </div>
+            <p class="v2-instruction">
+              Maak elk woord van de zin met de juiste letters. Pas op: er zitten per woord ook extra fop-letters bij!
+            </p>
+            <div id="v5-feedback-bar" class="feedback-bar" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- De woorden van de zin, elk als eigen groep met vakjes + eigen letters eronder -->
+        <div class="v5-sentence-board">
+          <div id="v5-word-groups" class="v5-word-groups">
+            <!-- Dynamisch per woord een kaart met boven de doelvakjes en onder de geschudde letters -->
+          </div>
+        </div>
+
+        <!-- Wissen / Controleer / Volgende knoppen -->
+        <div class="v2-action-row v5-action-row">
+          <button id="btn-v5-clear" class="secondary-btn" type="button" title="Maak alle niet-vergrendelde letters leeg">
+            🔄 Wissen
+          </button>
+          <button id="btn-v5-check" class="primary-btn btn-green check-btn" type="button">
+            ✅ Controleer hele zin
+          </button>
+          <button id="btn-v5-next" class="primary-btn btn-blue check-btn hidden" type="button">
+            ➡️ Volgende zin
+          </button>
         </div>
       </div>
     </section>
